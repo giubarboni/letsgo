@@ -186,12 +186,13 @@ for (const s of stops) {
   const x = X(s.ll[1]), y = Y(s.ll[0]);
   const num = s.n === 1 ? '1·9' : s.n;
   const nts = nightsLabel(s);
+  const halo = s.slug === 'essaouira' ? '' : 'stroke="var(--land)" stroke-width="3" paint-order="stroke"'; // alone sabbia dietro il testo; Essaouira sta sul mare, senza
   out += `<g class="stop" data-slug="${s.slug}"><use href="#s-${s.type}" x="${x}" y="${y}" fill="var(--tappa)" stroke="var(--land)" stroke-width="2"/>
     <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${s.n === 1 ? 10 : 12}" font-weight="700" fill="var(--tappa-num)">${num}</text>
-    <text x="${x + s.lab[0]}" y="${y + s.lab[1]}" text-anchor="${s.lab[2]}" font-size="13" font-weight="600" fill="var(--tappa)"
-      stroke="var(--land)" stroke-width="3" paint-order="stroke">${s.name}</text>
+    <text x="${x + s.lab[0]}" y="${y + s.lab[1]}" text-anchor="${s.lab[2]}" font-size="13" font-weight="600" fill="var(--tappa-nome)"
+      ${halo}>${s.name}</text>
     <text x="${x + s.lab[0]}" y="${y + s.lab[1] + 13}" text-anchor="${s.lab[2]}" font-size="10" fill="var(--muted)"
-      stroke="var(--land)" stroke-width="3" paint-order="stroke">${nts}</text></g>`;
+      ${halo}>${nts}</text></g>`;
 }
 svg.innerHTML = out;
 
