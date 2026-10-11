@@ -189,6 +189,16 @@ for (const s of stops) {
       stroke="var(--land)" stroke-width="3" paint-order="stroke">${nts}</text></g>`;
 }
 svg.innerHTML = out;
+
+// Dove sono: puntino sulla mappa col GPS del telefono; si vede solo se si è in Marocco.
+const io = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+io.setAttribute('r', 9); io.setAttribute('fill', 'var(--ink)'); io.setAttribute('stroke', 'var(--bg)'); io.setAttribute('stroke-width', 3);
+io.setAttribute('visibility', 'hidden');
+svg.append(io);
+navigator.geolocation?.watchPosition(({ coords: { latitude: la, longitude: lo } }) => {
+  io.setAttribute('visibility', la > 27.5 && la < 36 && lo > -13.5 && lo < -0.8 ? 'visible' : 'hidden');
+  io.setAttribute('cx', X(lo)); io.setAttribute('cy', Y(la));
+});
 // sfondo a pillola dietro ogni valore delle ore, misurato sul testo
 // (dopo il caricamento del font, altrimenti le pillole sono misurate col carattere di ripiego)
 document.fonts.load('600 10px "General Sans"').then(() => svg.querySelectorAll('text.hl').forEach(t => {
