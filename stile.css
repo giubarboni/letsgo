@@ -30,16 +30,17 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Gen
   .page { padding-top: 24px; }
 }
 
-/* Mobile: capsula flottante sotto la barra di stato (il telefono non lascia colorarla come la navbar) */
+/* Mobile: capsula flottante in basso, sopra la barra home del telefono */
 @media (max-width: 700px) {
-  :root { --nav: calc(68px + env(safe-area-inset-top)); }
-  .navbar { padding: env(safe-area-inset-top) 44px 0; pointer-events: none; }
+  :root { --nav: calc(68px + env(safe-area-inset-bottom)); }
+  .navbar { top: auto; bottom: 0; padding: 0 44px env(safe-area-inset-bottom); pointer-events: none; }
   .navbar a { pointer-events: auto; }
-  .navbar::before { inset: calc(8px + env(safe-area-inset-top)) 46px 8px; border-radius: 999px; clip-path: none; pointer-events: auto; }
+  .navbar::before { inset: 8px 46px calc(8px + env(safe-area-inset-bottom)); border-radius: 999px; clip-path: none; pointer-events: auto; }
 }
 
 /* Pagine interne */
 .page { max-width: 720px; margin: 0 auto; padding: calc(var(--nav) + 16px) 16px 48px; }
+@media (max-width: 700px) { .page { padding: calc(env(safe-area-inset-top) + 16px) 16px calc(var(--nav) + 24px); } } /* navbar in basso: spazio sotto, non sopra */
 .ptitle { margin: 0 0 16px; font-size: 32px; }
 .intro { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
 .card { margin: 0 0 16px; padding: 16px; border-radius: 14px; background: var(--card); }
