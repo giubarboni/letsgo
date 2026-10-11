@@ -19,8 +19,8 @@
   @media (max-width: 700px) { .cars { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 12px; scroll-padding: 0 16px; } .car { flex: 0 0 82%; scroll-snap-align: start; } }
   .car { display: flex; flex-direction: column; overflow: hidden; border-radius: 18px; background: var(--card, color-mix(in srgb, var(--land) 57%, var(--bg))); }
   /* L'auto (PNG trasparente, con l'ombra già nell'immagine) sta sullo sfondo della card; l'altezza è uguale per le due card. */
-  .car-img { position: relative; aspect-ratio: 2 / 1; }
-  .car-photo { position: absolute; inset: 12px 12px 0; width: calc(100% - 24px); height: calc(100% - 12px); object-fit: contain; }
+  .car-img { position: relative; aspect-ratio: 2 / 1; margin-top: 32px; }
+  .car-photo { position: absolute; inset: 12px 12px 0; width: calc(100% - 24px); height: calc(100% - 12px); object-fit: contain; -webkit-mask-image: linear-gradient(#000 88%, transparent); mask-image: linear-gradient(#000 88%, transparent); } /* sfuma il fondo: l'ombra della prima foto è tagliata netta */
   .car-body { display: flex; flex: 1; flex-direction: column; gap: 14px; padding: 16px; }
   .car h2 { margin: 0; font-size: 20px; letter-spacing: .01em; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -65,7 +65,7 @@ function auto(a) {
       <div class="price"><b>${a.prezzoGiorno}</b> <span>/ giorno</span><small>Totale ${a.totale}</small></div>
       <div class="actions"></div>
     </div>
-    <div class="credit">Foto: <a href="${a.fonte}" target="_blank" rel="noopener">${a.credito}</a></div>`;
+    ${a.credito ? `<div class="credit">Foto: <a href="${a.fonte}" target="_blank" rel="noopener">${a.credito}</a></div>` : ''}`;
   const act = c.querySelector('.actions');
   for (const [l, u] of a.bottoni) {
     const b = u ? el('a', 'btn', l) : el('button', 'btn', l);
