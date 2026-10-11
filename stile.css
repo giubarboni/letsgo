@@ -6,7 +6,7 @@
   --bg: #f6f2ea; --ink: #54330d; --muted: #6e655a; --line: #e4ddd1; /* prima #ddd4c4, +4 punti di luminosità HSL */
   --sea: #bdd5e3; --land: #eadfc6; --land-edge: #b3a283;
   --card: #f2ebdd; --card-ticket: #f0e9d7; /* come prima (terra 57% / 72% su sfondo), +2 punti di luminosità HSL */
-  --tappa: #ee7c40; --tappa-num: var(--land); --tappa-nome: #994417; /* pallini delle tappe e numeri dentro */
+  --tappa: #ee7c40; --tappa-num: var(--land); --tappa-nome: #995029; /* pallini delle tappe e numeri dentro */
   --posizione: #4285f4; /* azzurro del puntino di Google Maps */
   --nat: #78bd8a; --city: #f09a6c; --coast: #4a90c2; --transit: #bdb5a8; --dot-ink: var(--ink);
   --land-africa: color-mix(in srgb, var(--land) 82%, #5a4a30); --route: #4a3d2a; --route-line: #746855; /* prima: route 70% su terra (#7a6e59), −2 punti di luminosità HSL */ --tag-bg: var(--route-line); --tag-ink: var(--land);
