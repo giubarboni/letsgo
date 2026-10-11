@@ -3,7 +3,7 @@
 
 :root {
   color-scheme: light;
-  --bg: #f6f2ea; --ink: #54330d; --muted: #6e655a; --line: #ddd4c4;
+  --bg: #f6f2ea; --ink: #54330d; --muted: #6e655a; --line: #e4ddd1; /* prima #ddd4c4, +4 punti di luminosità HSL */
   --sea: #bdd5e3; --land: #eadfc6; --land-edge: #b3a283;
   --card: #f2ebdd; --card-ticket: #f0e9d7; /* come prima (terra 57% / 72% su sfondo), +2 punti di luminosità HSL */
   --tappa: #ee7c40; --tappa-num: var(--land); --tappa-nome: #994417; /* pallini delle tappe e numeri dentro */
