@@ -5,7 +5,7 @@
   color-scheme: light;
   --bg: #f6f2ea; --ink: #2b2620; --muted: #6e655a; --line: #ddd4c4;
   --sea: #bdd5e3; --land: #eadfc6; --land-edge: #b3a283;
-  --card: color-mix(in srgb, var(--land) 57%, var(--bg));
+  --card: transparent;
   --nat: #78bd8a; --city: #f09a6c; --coast: #4a90c2; --transit: #bdb5a8; --dot-ink: #2b2620;
   --land-africa: color-mix(in srgb, var(--land) 82%, #5a4a30); --route: #4a3d2a; --route-line: color-mix(in srgb, var(--route) 70%, var(--land)); --tag-bg: var(--route-line); --tag-ink: var(--land);
 }
