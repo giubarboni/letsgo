@@ -192,7 +192,7 @@ svg.innerHTML = out;
 
 // Dove sono: puntino sulla mappa col GPS del telefono; si vede solo se si è in Marocco.
 const io = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-io.setAttribute('r', 9); io.setAttribute('fill', 'var(--ink)'); io.setAttribute('stroke', 'var(--bg)'); io.setAttribute('stroke-width', 3);
+io.setAttribute('r', 9); io.setAttribute('fill', 'var(--posizione)'); io.setAttribute('stroke', 'var(--bg)'); io.setAttribute('stroke-width', 3);
 io.setAttribute('visibility', 'hidden');
 svg.append(io);
 navigator.geolocation?.watchPosition(({ coords: { latitude: la, longitude: lo } }) => {
