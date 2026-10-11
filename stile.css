@@ -40,7 +40,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Gen
 
 /* Pagine interne */
 .page { max-width: 720px; margin: 0 auto; padding: calc(var(--nav) + 16px) 16px 48px; }
-.ptitle { margin: 0 0 16px; font-size: 22px; }
+.ptitle { margin: 0 0 16px; font-size: 32px; }
 .intro { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
 .card { margin: 0 0 16px; padding: 16px; border-radius: 14px; background: var(--card); }
 .chead { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
