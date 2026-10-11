@@ -24,7 +24,7 @@
   /* Desktop: colonna a sinistra con elenco tappe e, sotto, la legenda (la navbar sta a destra). */
   .side { position: fixed; z-index: 5; top: 50%; left: 16px; transform: translateY(-50%); width: 360px; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 8px; }
   .legend { flex: none; display: flex; flex-wrap: nowrap; justify-content: center; gap: 14px; padding: 6px 14px; border-radius: 8px; background: color-mix(in srgb, var(--bg) 75%, transparent); color: var(--ink); font-size: 13px; white-space: nowrap; pointer-events: none; }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+  .legend svg { width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; }
   .panel { min-height: 0; display: flex; flex-direction: column; border-radius: 16px; background: color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(60, 45, 20, .18); }
   .phead { flex: none; padding: 16px 16px 4px; }
   .grab { display: none; width: 36px; height: 4px; margin: 0 auto 12px; border-radius: 2px; background: var(--muted); opacity: .5; }
@@ -62,7 +62,8 @@
   ol { list-style: none; margin: 0; padding: 0; }
   li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 18px 0; font-size: 12px; line-height: 1.35; border-bottom: 1px solid color-mix(in srgb, var(--line) 45%, transparent); }
   li:last-child { border-bottom: 0; }
-  .n { width: 22px; height: 22px; border-radius: 50%; background: var(--tappa); color: var(--tappa-num); font-weight: 700; display: grid; place-items: center; font-size: 11px; }
+  .n { width: 22px; height: 22px; }
+  .n svg { display: block; }
   .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; }
   .t { font-weight: 600; }
   .meta { color: var(--muted); font-size: 11px; }
@@ -77,10 +78,10 @@
   <ol id="list" class="plist"></ol>
 </aside>
 <div class="legend">
-  <span><i style="background:var(--nat)"></i>Natura</span>
-  <span><i style="background:var(--city)"></i>Città / cultura</span>
-  <span><i style="background:var(--coast)"></i>Costa</span>
-  <span><i style="background:var(--transit)"></i>Transito</span>
+  <span><svg viewBox="-15 -15 30 30"><use href="#s-nat" fill="var(--tappa)"/></svg>Natura</span>
+  <span><svg viewBox="-15 -15 30 30"><use href="#s-city" fill="var(--tappa)"/></svg>Città / cultura</span>
+  <span><svg viewBox="-15 -15 30 30"><use href="#s-coast" fill="var(--tappa)"/></svg>Costa</span>
+  <span><svg viewBox="-15 -15 30 30"><use href="#s-transit" fill="var(--tappa)"/></svg>Transito</span>
 </div>
 </div>
 
@@ -141,10 +142,14 @@ const segs = [
   [at(1), at(8), 0, '3 h', 0, -8], [at(8), at(1), 22, '3 h', 0, 14]
 ];
 
-const color = t => `var(--${t === 'transit' ? 'transit' : t})`;
 const svg = document.getElementById('map');
+// Forme delle tappe (centrate, 30 × 30): natura = fiore a 9 petali, città = quadrato, transito = cerchio, costa = goccia.
 let out = `<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-  <path d="M0,1 L9,5 L0,9 z" fill="var(--route-line)"/></marker></defs>
+  <path d="M0,1 L9,5 L0,9 z" fill="var(--route-line)"/></marker>
+  <path id="s-nat" d="M4.51 -12.39A5.2 5.2 0 0 0 -4.51 -12.39A5.2 5.2 0 0 0 -11.42 -6.59A5.2 5.2 0 0 0 -12.98 2.29A5.2 5.2 0 0 0 -8.47 10.10A5.2 5.2 0 0 0 0 13.18A5.2 5.2 0 0 0 8.47 10.10A5.2 5.2 0 0 0 12.98 2.29A5.2 5.2 0 0 0 11.42 -6.59A5.2 5.2 0 0 0 4.51 -12.39Z"/>
+  <rect id="s-city" x="-15" y="-15" width="30" height="30"/>
+  <circle id="s-transit" r="15"/>
+  <path id="s-coast" transform="translate(-15 -15) scale(.01863)" d="M805 0C520 210 0 480 0 860C0 1300 330 1608 805 1608C1280 1608 1609 1300 1609 860C1609 480 1090 210 805 0Z"/></defs>
   <rect x="-3000" y="-3000" width="7000" height="7000" fill="var(--sea)"/>
   <g fill="var(--land-africa)">${[africa, madagascar].map(a => `<polygon points="${a.map(P).join(' ')}" vector-effect="non-scaling-stroke"/>`).join('')}</g>
   <polygon points="${outline.map(P).join(' ')}" fill="var(--land)"/>
@@ -181,7 +186,7 @@ for (const s of stops) {
   const x = X(s.ll[1]), y = Y(s.ll[0]);
   const num = s.n === 1 ? '1·9' : s.n;
   const nts = nightsLabel(s);
-  out += `<g class="stop" data-slug="${s.slug}"><circle cx="${x}" cy="${y}" r="15" fill="var(--tappa)" stroke="var(--land)" stroke-width="2"/>
+  out += `<g class="stop" data-slug="${s.slug}"><use href="#s-${s.type}" x="${x}" y="${y}" fill="var(--tappa)" stroke="var(--land)" stroke-width="2"/>
     <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${s.n === 1 ? 10 : 12}" font-weight="700" fill="var(--tappa-num)">${num}</text>
     <text x="${x + s.lab[0]}" y="${y + s.lab[1]}" text-anchor="${s.lab[2]}" font-size="13" font-weight="600" fill="var(--ink)"
       stroke="var(--land)" stroke-width="3" paint-order="stroke">${s.name}</text>
@@ -212,7 +217,7 @@ document.fonts.load('600 10px "General Sans"').then(() => svg.querySelectorAll('
 
 // Lista tappe
 document.getElementById('list').innerHTML = stops.map(s => `
-  <li data-slug="${s.slug}"><span class="n">${s.n}</span>
+  <li data-slug="${s.slug}"><span class="n"><svg viewBox="-16 -16 32 32"><use href="#s-${s.type}" fill="var(--tappa)"/><text y="5.5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--tappa-num)">${s.n}</text></svg></span>
   <div><div class="head"><span class="t">${s.name}</span>
   <span class="meta">${s.nights} ${s.nights === 1 ? 'notte' : 'notti'}${s.drive ? ' · guida ' + s.drive : ''}</span></div>
   <div class="note">${s.note}</div></div></li>`).join('');
