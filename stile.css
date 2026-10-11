@@ -55,7 +55,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Gen
 
 /* Finestra (modale) */
 .dlg-ov { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(30, 22, 10, .45); }
-.dlg { width: 100%; max-width: 420px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); }
+.dlg { width: 100%; max-width: 420px; padding: 20px; border-radius: 16px; background: var(--bg); }
 .dlg h2 { margin: 0 0 12px; font-size: 18px; }
 .dlg ul { margin: 0 0 8px; padding-left: 18px; font-size: 14px; }
 .dlg li { padding: 3px 0; }
