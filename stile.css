@@ -40,7 +40,11 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Gen
 
 /* Pagine interne */
 .page { max-width: 720px; margin: 0 auto; padding: calc(var(--nav) + 16px) 16px 48px; }
-@media (max-width: 700px) { .page { padding: calc(env(safe-area-inset-top) + 16px) 16px calc(var(--nav) + 24px); } } /* navbar in basso: spazio sotto, non sopra */
+/* Mobile: navbar in basso, quindi spazio sotto e non sopra. Scorre il contenitore .page e non il documento: così Safari non fa comparire/sparire la sua barra e la navbar non si muove (come nella mappa). */
+@media (max-width: 700px) {
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  .page { position: fixed; inset: 0; max-width: none; margin: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: calc(env(safe-area-inset-top) + 16px) 16px calc(var(--nav) + 24px); }
+}
 .ptitle { margin: 0 0 16px; font-size: 32px; }
 .intro { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
 .card { margin: 0 0 16px; padding: 16px; border-radius: 14px; background: var(--card); }
