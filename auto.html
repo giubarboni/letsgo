@@ -52,7 +52,7 @@ const sv = (d, s = 16) => iconaSvg(d, s);
 function auto(a) {
   const c = el('article', 'car');
   c.innerHTML = `
-    <div class="car-img"><img class="car-photo" src="${a.foto}" alt=""></div>
+    <div class="car-img"><img class="car-photo" src="${a.foto}" alt=""${a.scala ? ` style="transform: translateY(${a.giu || 0}%) scale(${a.scala}); transform-origin: 50% 100%"` : ''}></div>
     <div class="car-body">
       <div><h2>${a.modello}</h2></div>
       <div class="chips">

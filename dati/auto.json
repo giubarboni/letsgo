@@ -36,6 +36,8 @@
   },
   {
    "foto": "foto/auto/2.png",
+   "scala": 1.2,
+   "giu": 10,
    "modello": "MODELLO AUTO",
    "bagagli": "0",
    "persone": "0",
