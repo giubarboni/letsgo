@@ -62,7 +62,7 @@
   ol { list-style: none; margin: 0; padding: 0; }
   li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 18px 0; font-size: 12px; line-height: 1.35; border-bottom: 1px solid color-mix(in srgb, var(--line) 45%, transparent); }
   li:last-child { border-bottom: 0; }
-  .n { width: 22px; height: 22px; border-radius: 50%; color: var(--dot-ink); font-weight: 700; display: grid; place-items: center; font-size: 11px; }
+  .n { width: 22px; height: 22px; border-radius: 50%; background: var(--tappa); color: var(--tappa-num); font-weight: 700; display: grid; place-items: center; font-size: 11px; }
   .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; }
   .t { font-weight: 600; }
   .meta { color: var(--muted); font-size: 11px; }
@@ -181,8 +181,8 @@ for (const s of stops) {
   const x = X(s.ll[1]), y = Y(s.ll[0]);
   const num = s.n === 1 ? '1·9' : s.n;
   const nts = nightsLabel(s);
-  out += `<g class="stop" data-slug="${s.slug}"><circle cx="${x}" cy="${y}" r="${s.n === 1 ? 15 : 12}" fill="${color(s.type)}" stroke="var(--land)" stroke-width="2"/>
-    <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${s.n === 1 ? 10 : 12}" font-weight="700" fill="var(--dot-ink)">${num}</text>
+  out += `<g class="stop" data-slug="${s.slug}"><circle cx="${x}" cy="${y}" r="15" fill="var(--tappa)" stroke="var(--land)" stroke-width="2"/>
+    <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${s.n === 1 ? 10 : 12}" font-weight="700" fill="var(--tappa-num)">${num}</text>
     <text x="${x + s.lab[0]}" y="${y + s.lab[1]}" text-anchor="${s.lab[2]}" font-size="13" font-weight="600" fill="var(--ink)"
       stroke="var(--land)" stroke-width="3" paint-order="stroke">${s.name}</text>
     <text x="${x + s.lab[0]}" y="${y + s.lab[1] + 13}" text-anchor="${s.lab[2]}" font-size="10" fill="var(--muted)"
@@ -212,7 +212,7 @@ document.fonts.load('600 10px "General Sans"').then(() => svg.querySelectorAll('
 
 // Lista tappe
 document.getElementById('list').innerHTML = stops.map(s => `
-  <li data-slug="${s.slug}"><span class="n" style="background:${color(s.type)}">${s.n}</span>
+  <li data-slug="${s.slug}"><span class="n">${s.n}</span>
   <div><div class="head"><span class="t">${s.name}</span>
   <span class="meta">${s.nights} ${s.nights === 1 ? 'notte' : 'notti'}${s.drive ? ' · guida ' + s.drive : ''}</span></div>
   <div class="note">${s.note}</div></div></li>`).join('');
