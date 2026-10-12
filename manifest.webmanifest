@@ -1,6 +1,6 @@
 {
- "name": "Marocco in auto — 26 dic / 10 gen",
- "short_name": "Marocco",
+ "name": "LetsGo",
+ "short_name": "LetsGo",
  "start_url": "index.html",
  "scope": "./",
  "display": "standalone",
