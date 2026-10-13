@@ -19,6 +19,8 @@
 <style>
   html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   h1 { font-size: 32px; margin: 0; }
+  /* Mobile: il titolo sta sulla mappa, nella stessa posizione di quello delle altre pagine */
+  .mtitle { display: none; position: fixed; z-index: 4; top: calc(env(safe-area-inset-top) + 16px); left: 16px; pointer-events: none; }
   .zoom { position: fixed; inset: 0; overflow: clip; background: var(--sea); touch-action: none; cursor: grab; }
   .zstage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
   .zstage svg { display: block; max-width: none; }
@@ -36,7 +38,8 @@
     .panel { position: fixed; z-index: 5; left: 0; right: 0; bottom: 0; height: calc(100vh - env(safe-area-inset-top) - 8px); height: calc(100dvh - env(safe-area-inset-top) - 8px); border-radius: 16px 16px 0 0; transform: translateY(var(--y, 60%)); transition: transform .25s ease; }
     .panel.drag { transition: none; }
     .phead { padding: 12px 16px; touch-action: none; cursor: grab; }
-    .phead h1 { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); } /* il titolo resta per gli screen reader */
+    .panel h1 { display: none; }
+    .mtitle { display: block; }
     .grab { display: block; margin: 0 auto; }
     .plist { padding-bottom: calc(var(--nav) + 8px); } /* il pannello arriva fino al bordo: la navbar in basso ne copre l'ultima parte */
     .legend { position: fixed; z-index: 1; left: 50%; bottom: calc(var(--peek, 62px) + 10px); transform: translateX(-50%); gap: 10px; padding: 5px 8px; font-size: 11px; }
@@ -77,6 +80,7 @@
 </head>
 <body data-page="mappa">
 <div class="zoom"><div class="zstage"><svg id="map" viewBox="-860 -440 7860 9600" role="img" aria-label="Mappa dell'itinerario in Marocco"></svg></div></div>
+<h1 class="mtitle">Tappe</h1>
 <button class="locate" id="locate" type="button" aria-label="Mostra dove sono"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
 <div class="side">
 <aside class="panel drag">
