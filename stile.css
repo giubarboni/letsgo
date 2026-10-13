@@ -4,7 +4,7 @@
 :root {
   color-scheme: light;
   --bg: #f6f2ea; --ink: #54330d; --muted: #6e655a; --line: #e4ddd1; /* prima #ddd4c4, +4 punti di luminosità HSL */
-  --sea: #bdd5e3; --land: #eadfc6; --land-edge: #b3a283;
+  --sea: #bdd5e3; --land: #eadfc6;
   --card: #f2ebdd; --card-ticket: #f0e9d7; /* come prima (terra 57% / 72% su sfondo), +2 punti di luminosità HSL */
   --tappa: #ee7c40; --tappa-num: var(--land); --tappa-nome: #995029; /* pallini delle tappe e numeri dentro */
   --posizione: #4285f4; /* azzurro del puntino di Google Maps */
@@ -16,9 +16,9 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Gen
 
 /* Barra in alto con le icone delle sezioni (costruita in nav.js) */
 :root { --nav: 68px; --nav-bg: #1c1a17; --nav-btn: #3a352f; --nav-ink: #efe9df; --nav-muted: #a49b8f; } /* la navbar è in versione scura: contrasta con lo sfondo chiaro delle pagine */
-/* Linguetta appesa al bordo alto, senza ombra: sembra uno strato sotto l'interfaccia, tirata da una parte. La forma è ritagliata con un percorso (340×68), gli angoli in alto si allargano fino ad annullarsi sul bordo. */
+/* Navbar scura, senza ombra: sembra uno strato sotto l'interfaccia. Desktop: linguetta verticale sul bordo destro; mobile: pillola in basso. */
 .navbar { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 10; width: 340px; height: var(--nav); padding: 12px 44px; display: flex; justify-content: center; align-items: center; gap: 10px; }
-.navbar::before { content: ""; position: absolute; inset: 0; background: var(--nav-bg); clip-path: path("M0,0 C10,0 17,5.3 22,16 L36,50 Q40,68 58,68 H282 Q300,68 304,50 L318,16 C323,5.3 330,0 340,0 Z"); }
+.navbar::before { content: ""; position: absolute; inset: 0; background: var(--nav-bg); }
 .navbar a { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--nav-btn); color: var(--nav-muted); }
 .navbar a[aria-current] { background: var(--nav-ink); color: var(--nav-bg); }
 
@@ -27,19 +27,17 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Gen
   .navbar { top: 50%; left: auto; right: 0; transform: translateY(-50%); width: 68px; height: 340px; padding: 44px 12px; flex-direction: column; }
   .navbar::before { clip-path: path("M68,0 C68,10 62.7,17 52,22 L18,36 Q0,40 0,58 V282 Q0,300 18,304 L52,318 C62.7,323 68,330 68,340 Z"); }
   body { padding-right: 68px; }
-  .page { padding-top: 24px; }
 }
 
 /* Mobile: capsula flottante in basso, a 8px dal bordo inferiore del viewport: nel browser sta sopra la sua barra, nell'app dalla Home scende fino al bordo (niente margine per l'area di sicurezza) */
 @media (max-width: 700px) {
-  :root { --nav: 68px; }
   .navbar { top: auto; bottom: 0; padding: 0 44px; pointer-events: none; }
   .navbar a { pointer-events: auto; }
   .navbar::before { inset: 8px 46px; border-radius: 999px; clip-path: none; pointer-events: auto; }
 }
 
 /* Pagine interne */
-.page { max-width: 720px; margin: 0 auto; padding: calc(var(--nav) + 16px) 16px 48px; }
+.page { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
 /* Mobile: navbar in basso, quindi spazio sotto e non sopra. Scorre il contenitore .page e non il documento: così Safari non fa comparire/sparire la sua barra e la navbar non si muove (come nella mappa). */
 @media (max-width: 700px) {
   html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -50,12 +48,6 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Gen
 .card { margin: 0 0 16px; padding: 16px; border-radius: 14px; background: var(--card); }
 .chead { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
 .chead h2 { margin: 0; font-size: 17px; }
-.sub { color: var(--muted); font-size: 13px; }
-.badge { flex: none; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--dot-ink); background: var(--city); }
-.badge.ok { background: var(--nat); }
-.kv { display: grid; grid-template-columns: minmax(80px, 120px) 1fr; gap: 6px 12px; margin: 0 0 14px; font-size: 14px; }
-.kv dt { color: var(--muted); }
-.kv dd { margin: 0; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .btn { padding: 10px 14px; border: 0; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; background: color-mix(in srgb, var(--ink) 5%, transparent); color: var(--ink); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }

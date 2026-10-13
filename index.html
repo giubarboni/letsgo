@@ -3,11 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><!-- la mappa va sotto la barra di stato del telefono -->
-<meta name="theme-color" id="tc" content="#eadfc6"><!-- barra di stato del browser: segue il colore della mappa in alto (aggiornato da script) -->
+<meta name="theme-color" content="#eadfc6">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="icone/favicon-32.png" type="image/png" sizes="32x32">
-<link rel="icon" href="icone/favicon-128.png" type="image/png" sizes="128x128">
 <link rel="apple-touch-icon" href="icone/letsgo-180.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -248,23 +247,11 @@ stage.style.width = svg.style.width = W + 'px'; stage.style.height = svg.style.h
 let sc = 1, tx = 0, ty = 0, minSc = 1;
 const calcMin = () => Math.min(zoom.clientWidth / W, zoom.clientHeight / H);
 
-// Barra di stato del browser (iPhone): prende il colore della mappa nel punto più alto, al centro, e lo segue mentre si sposta.
-const tc = document.getElementById('tc'), px = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-let tcBusy = false;
-const syncBar = () => {
-  if (!mobile.matches) { tc.content = '#f6f2ea'; return; }
-  const e = document.elementFromPoint(innerWidth / 2, 1), cs = e && getComputedStyle(e);
-  const col = !cs ? null : (e.ownerSVGElement || e instanceof SVGElement) && cs.fill !== 'none' ? cs.fill : getComputedStyle(zoom).backgroundColor;
-  px.fillStyle = '#eadfc6'; px.fillStyle = col; px.clearRect(0, 0, 1, 1); px.fillRect(0, 0, 1, 1);
-  const [r, g, b] = px.getImageData(0, 0, 1, 1).data;
-  tc.content = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-};
 const apply = () => {
   const vw = zoom.clientWidth, vh = zoom.clientHeight, w = W * sc, h = H * sc;
   tx = w <= vw ? (vw - w) / 2 : Math.min(0, Math.max(vw - w, tx));
   ty = h <= vh ? (vh - h) / 2 : Math.min(0, Math.max(vh - h, ty));
   stage.style.transform = `translate(${tx}px,${ty}px) scale(${sc})`;
-  if (!tcBusy) { tcBusy = true; requestAnimationFrame(() => { tcBusy = false; syncBar(); }); }
 };
 const zoomAt = (f, cx, cy) => {
   const n = Math.min(4, Math.max(minSc, sc * f));
@@ -274,8 +261,7 @@ const zoomAt = (f, cx, cy) => {
 // Pannello tappe: su desktop è un riquadro flottante; su mobile è un bottom sheet con tre posizioni (chiuso, metà, aperto).
 const panel = document.querySelector('.panel'), phead = panel.querySelector('.phead');
 const mobile = matchMedia('(max-width: 700px)');
-const safe = document.createElement('div'); safe.style.cssText = 'position:fixed;visibility:hidden;padding-bottom:var(--nav)'; document.body.append(safe); // altezza della navbar in basso: il pannello chiuso deve restare sopra
-const snaps = () => [panel.offsetHeight - phead.offsetHeight - 8 - parseFloat(getComputedStyle(safe).paddingBottom), panel.offsetHeight - innerHeight * .42, 0]; // translateY di ogni posizione
+const snaps = () => [panel.offsetHeight - phead.offsetHeight - 8 - navbar.offsetHeight, panel.offsetHeight - innerHeight * .42, 0]; // translateY di ogni posizione
 let snapI = 1;
 const setY = (y, dragging) => { panel.classList.toggle('drag', !!dragging); panel.style.setProperty('--y', y + 'px'); };
 const goSnap = i => { snapI = i; setY(snaps()[i]); document.documentElement.style.setProperty('--peek', panel.offsetHeight - snaps()[0] + 'px'); }; // la legenda sta sopra il pannello chiuso
@@ -306,9 +292,9 @@ const fit = () => {
   const m = mobile.matches;
   // spazio libero: su desktop tra la colonna a sinistra e la navbar a destra; su mobile sopra il bottom sheet (la navbar sta in basso)
   const left = m ? 0 : panel.offsetWidth + 32, w = innerWidth - left - (m ? 0 : navbar.offsetWidth);
-  const top = 0, h = m ? innerHeight - (panel.offsetHeight - snaps()[1]) : innerHeight;
-  sc = Math.min(1.3, Math.max(minSc, .75, Math.min(w / 800, (h - top) / 450)));
-  tx = left + w / 2 - (450 - VB[0]) * sc; ty = top + (h - top) / 2 - (295 - VB[1]) * sc; apply();
+  const h = m ? innerHeight - (panel.offsetHeight - snaps()[1]) : innerHeight;
+  sc = Math.min(1.3, Math.max(minSc, .75, Math.min(w / 800, h / 450)));
+  tx = left + w / 2 - (450 - VB[0]) * sc; ty = h / 2 - (295 - VB[1]) * sc; apply();
 };
 goSnap(1); fit(); setTimeout(() => panel.classList.remove('drag'), 50);
 

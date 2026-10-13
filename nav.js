@@ -36,29 +36,7 @@ document.body.prepend(navbar);
 // Titolo della pagina (la mappa ha quello del pannello).
 if (cur !== 'mappa') document.querySelector('.page').prepend(el('h1', 'ptitle', PAGES.find(p => p[0] === cur)[2]));
 
-// Elenco di schede da un file dati: { intro, voci: [{ titolo, sottotitolo, stato, campi: [[nome, valore]], bottoni: [[etichetta, link]] }] }
-function schede(root, d) {
-  if (d.intro) root.append(el('p', 'intro', d.intro));
-  for (const v of d.voci) {
-    const card = el('section', 'card'), head = el('div', 'chead'), t = el('div');
-    t.append(el('h2', '', v.titolo)); if (v.sottotitolo) t.append(el('div', 'sub', v.sottotitolo));
-    head.append(t);
-    if (v.stato) head.append(el('span', /^prenotat/i.test(v.stato) ? 'badge ok' : 'badge', v.stato));
-    const dl = el('dl', 'kv');
-    for (const [k, val] of v.campi) dl.append(el('dt', '', k), el('dd', '', val));
-    const act = el('div', 'actions');
-    for (const [l, u] of v.bottoni || []) { // senza link (documento non ancora caricato) il bottone resta disattivato
-      const b = u ? el('a', 'btn', l) : el('button', 'btn', l);
-      if (u) { b.href = u; b.target = '_blank'; b.rel = 'noopener'; } else { b.type = 'button'; b.disabled = true; b.title = 'Non ancora disponibile'; }
-      act.append(b);
-    }
-    card.append(head, dl, act); root.append(card);
-  }
-}
-
-// Pagine con elenco di schede: il nome del file dati sta in data-dati.
 const root = document.getElementById('root');
-if (root?.dataset.dati) load(root.dataset.dati).then(d => schede(root, d)).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
 
 // Offline: dopo la prima apertura con rete il sito resta sul telefono (sw.js).
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(r => r.active.postMessage('foto')).catch(() => {});
