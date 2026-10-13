@@ -17,7 +17,7 @@
 <style>
   /* Le due auto stanno affiancate; su mobile scorrono in orizzontale. */
   .cars { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 700px) { .cars { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 12px; scroll-padding: 0 16px; } .car { flex: 0 0 82%; scroll-snap-align: start; } }
+  @media (max-width: 700px) { .cars { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 12px; scroll-padding: 0 16px; scrollbar-width: none; } .cars::-webkit-scrollbar { display: none; } .car { flex: 0 0 82%; scroll-snap-align: start; } }
   .car { display: flex; flex-direction: column; overflow: hidden; border-radius: 18px; background: var(--card, color-mix(in srgb, var(--land) 57%, var(--bg))); }
   /* L'auto (PNG trasparente, con l'ombra già nell'immagine) sta sullo sfondo della card; l'altezza è uguale per le due card. */
   .car-img { position: relative; aspect-ratio: 2 / 1; margin-top: 32px; }
