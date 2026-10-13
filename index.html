@@ -313,6 +313,7 @@ zoom.addEventListener('pointermove', e => {
   const prev = ptrs.get(e.pointerId); if (!prev) return;
   const cur = { x: e.clientX, y: e.clientY };
   if (tap && Math.hypot(cur.x - tap.x, cur.y - tap.y) > 8) tap.moved = true;
+  if (mobile.matches && snapI && (ptrs.size > 1 || tap?.moved)) goSnap(0); // navigando la mappa il bottom sheet si abbassa
   if (ptrs.size === 1) { tx += cur.x - prev.x; ty += cur.y - prev.y; apply(); }
   else if (ptrs.size === 2) {
     const o = [...ptrs].find(([id]) => id !== e.pointerId)[1];
