@@ -29,7 +29,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Gen
 
 /* Mobile: capsula flottante in basso, a 8px dal bordo inferiore del viewport: nel browser sta sopra la sua barra, nell'app dalla Home scende fino al bordo (niente margine per l'area di sicurezza) */
 @media (max-width: 700px) {
-  .navbar { top: auto; bottom: 0; padding: 0 44px; pointer-events: none; }
+  .navbar { top: auto; bottom: 0; gap: 8px; padding: 0 44px; pointer-events: none; }
   .navbar a { width: 40px; height: 40px; pointer-events: auto; }
   .navbar::before { inset: 8px 46px; border-radius: 999px; clip-path: none; pointer-events: auto; }
 }
