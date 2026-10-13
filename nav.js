@@ -37,6 +37,14 @@ document.body.prepend(navbar);
 if (cur !== 'mappa') document.querySelector('.page').prepend(el('h1', 'ptitle', PAGES.find(p => p[0] === cur)[2]));
 
 const root = document.getElementById('root');
+// Bottoni di una scheda: senza link (documento non ancora caricato) restano disattivati.
+const bottoni = (act, lista) => { for (const [l, u] of lista) {
+  const b = u ? el('a', 'btn', l) : el('button', 'btn', l);
+  if (u) { b.href = u; b.target = '_blank'; b.rel = 'noopener'; } else { b.type = 'button'; b.disabled = true; b.title = 'Non ancora disponibile'; }
+  act.append(b);
+} };
+// Carica il file dati della pagina e lo disegna; se manca, lo dice.
+const pagina = (nome, disegna) => load(nome).then(disegna).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
 
 // Offline: dopo la prima apertura con rete il sito resta sul telefono (sw.js).
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(r => r.active.postMessage('foto')).catch(() => {});

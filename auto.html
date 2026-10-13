@@ -68,17 +68,12 @@ function auto(a) {
     </div>
     ${a.credito ? `<div class="credit">Foto: <a href="${a.fonte}" target="_blank" rel="noopener">${a.credito}</a></div>` : ''}`;
   const act = c.querySelector('.actions');
-  for (const [l, u] of a.bottoni) {
-    const b = u ? el('a', 'btn', l) : el('button', 'btn', l);
-    if (u) { b.href = u; b.target = '_blank'; b.rel = 'noopener'; } else { b.type = 'button'; b.disabled = true; b.title = 'Non ancora disponibile'; }
-    act.append(b);
-  }
+  bottoni(act, a.bottoni);
   return c;
 }
-load('auto').then(d => {
-  if (d.intro) root.append(el('p', 'intro', d.intro));
+pagina('auto', d => {
   const cars = el('div', 'cars'); d.auto.forEach(a => cars.append(auto(a))); root.append(cars);
-}).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
+});
 </script>
 </body>
 </html>

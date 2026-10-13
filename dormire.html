@@ -51,12 +51,12 @@ function stay(v) {
   if (v.link) { const b = c.querySelector('.stay-go'); b.disabled = false; b.title = 'Maggiori dettagli'; b.onclick = () => open(v.link, '_blank', 'noopener'); }
   return c;
 }
-load('dormire').then(d => {
+pagina('dormire', d => {
   const g = el('div', 'stays'); d.voci.forEach(v => g.append(stay(v))); root.append(g);
   const cr = el('details', 'credits'); cr.append(el('summary', '', 'Crediti foto'));
   d.voci.forEach(v => { const p = el('p'), a = el('a', '', `${v.autore} · ${v.licenza}`); a.href = v.fonte; a.target = '_blank'; a.rel = 'noopener'; p.append(`${v.luogo}: `, a); cr.append(p); });
   root.append(cr);
-}).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
+});
 </script>
 </body>
 </html>

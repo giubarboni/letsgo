@@ -57,19 +57,15 @@ function biglietto(v, bag) {
       <div class="t-price">${v.prezzo}</div></div><div class="actions"></div></div>`;
   t.querySelector('.t-bag button').onclick = () => modale(bag.titolo, (() => { const ul = el('ul'); bag.voci.forEach(x => ul.append(el('li', '', x))); return ul; })(), el('p', '', bag.nota));
   const act = t.querySelector('.actions');
-  for (const [l, u] of v.bottoni) {
-    const b = u ? el('a', 'btn', l) : el('button', 'btn', l);
-    if (u) { b.href = u; b.target = '_blank'; b.rel = 'noopener'; } else { b.type = 'button'; b.disabled = true; b.title = 'Non ancora disponibile'; }
-    act.append(b);
-  }
+  bottoni(act, v.bottoni);
   return t;
 }
 // la tacca sta sulla linea tratteggiata, all'inizio della parte bassa: si ricalcola se cambia la larghezza
 const tacche = () => document.querySelectorAll('.ticket').forEach(t => t.style.setProperty('--cy', t.querySelector('.t-stub').offsetTop + 'px'));
-load('voli').then(d => {
+pagina('voli', d => {
   d.voli.forEach(v => root.append(biglietto(v, d.bagagli)));
   tacche(); addEventListener('resize', tacche);
-}).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
+});
 </script>
 </body>
 </html>

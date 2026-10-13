@@ -136,7 +136,7 @@ const stops = [
 ];
 
 // Punto di passaggio non numerato.
-const via = { tizi:[31.3,-7.36] };
+const tizi = [31.3, -7.36];
 const at = n => stops.find(s => s.n === n).ll;
 const nightsLabel = s => s.n === 1 ? `${s.nights} + ${stops.find(t => t.n === 9).nights} notti` : `${s.nights} ${s.nights === 1 ? 'notte' : 'notti'}`;
 
@@ -144,7 +144,7 @@ const nightsLabel = s => s.n === 1 ? `${s.nights} + ${stops.find(t => t.n === 9)
 const segs = [
   [at(1), at(2), 0, '3 h'], [at(2), at(3), 0, '5,5 h'], [at(3), at(4), 0, '3 h'],
   [at(4), at(5), 0, '4,5 h'], [at(5), at(6), 0, '3 h'], [at(6), at(7), 0, '3,5 h'],
-  [at(7), via.tizi, 0, '', 0, 0, 'middle', true], [via.tizi, at(1), 0, '4 h', 14, 16, 'start'],
+  [at(7), tizi, 0, '', 0, 0, 'middle', true], [tizi, at(1), 0, '4 h', 14, 16, 'start'],
   [at(1), at(8), 0, '3 h', 0, -8], [at(8), at(1), 22, '3 h', 0, 14]
 ];
 

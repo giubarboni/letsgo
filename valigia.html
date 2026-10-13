@@ -37,7 +37,7 @@ const ibtn = (label, t, conLabel) => {
   return b;
 };
 const testo = s => `${s.nome.toUpperCase()}\n${s.voci.map(v => '- ' + v).join('\n')}`;
-load('valigia').then(d => {
+pagina('valigia', d => {
   const h = document.querySelector('.ptitle'), row = el('div', 'trow'), all = ibtn('Copia tutto', () => d.sezioni.map(testo).join('\n\n'), true);
   h.replaceWith(row); row.append(h, all);
   for (const s of d.sezioni) {
@@ -46,7 +46,7 @@ load('valigia').then(d => {
     const ul = el('ul', 'list'); s.voci.forEach(v => ul.append(el('li', '', v)));
     card.append(head, ul); root.append(card);
   }
-}).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
+});
 </script>
 </body>
 </html>
