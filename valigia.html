@@ -37,7 +37,10 @@ const ibtn = (label, t, conLabel) => {
   return b;
 };
 const testo = s => `${s.nome.toUpperCase()}\n${s.voci.map(v => '- ' + v).join('\n')}`;
-pagina('valigia', d => {
+// La lista arriva dal foglio come una colonna: titolo, voci, riga vuota, titolo, voci...
+const sezioni = righe => righe.reduce((out, r) => { if (r === '') out.push(null); else if (!out.length || out.at(-1) === null) out.push({ nome: r, voci: [] }); else out.at(-1).voci.push(r); return out; }, []).filter(Boolean);
+pagina(d => {
+  d.sezioni = sezioni(d.valigia);
   const h = document.querySelector('.ptitle'), row = el('div', 'trow'), all = ibtn('Copia tutto', () => d.sezioni.map(testo).join('\n\n'), true);
   h.replaceWith(row); row.append(h, all);
   for (const s of d.sezioni) {

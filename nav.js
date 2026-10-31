@@ -1,9 +1,64 @@
-// Parti comuni a tutte le pagine: menu, barra in alto (pagine interne), schede, funzionamento offline.
+// Parti comuni a tutte le pagine: dati dal foglio, navbar, funzionamento offline.
 const PAGES = [['mappa', 'index.html', 'Mappa'], ['voli', 'voli.html', 'Voli'], ['auto', 'auto.html', 'Auto'], ['dormire', 'dormire.html', 'Dormire'], ['valigia', 'valigia.html', 'Valigia']];
 const cur = document.body.dataset.page;
 
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
-const load = nome => fetch(`dati/${nome}.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+
+// Dati del viaggio: arrivano dal foglio Google tramite il suo script, che passa solo le schede e le colonne decise nel foglio.
+// Con la rete lenta (più di 2,5 s) o assente si usa l'ultima copia salvata, e intanto si aggiorna per la volta dopo.
+const FOGLIO = 'https://script.google.com/macros/s/AKfycbxJ9yiUvAH9bZ2JeltHj5YWQ5Hs-_KNHd5OFIoWYQocJrWVxu62dpSIB_-CF_e5zsC3Gw/exec';
+const viaggio = () => viaggio.p ||= (() => {
+  let copia = null; try { copia = JSON.parse(localStorage.getItem('viaggio')); } catch {}
+  const rete = fetch(FOGLIO).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => { try { localStorage.setItem('viaggio', JSON.stringify(d)); } catch {} return d; });
+  return copia ? Promise.race([rete, new Promise(ok => setTimeout(() => ok(copia), 2500))]).catch(() => copia) : rete;
+})();
+
+// Formati: "28 dic", "28–29 dic", "430,51 €", "6,5 h"
+const GIORNO = d => new Date(d + 'T12:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }).replace('.', '');
+const INTERVALLO = (da, a) => da === a ? GIORNO(da) : da.slice(0, 7) === a.slice(0, 7) ? `${+da.slice(8)}–${GIORNO(a)}` : `${GIORNO(da)} – ${GIORNO(a)}`;
+const EURO = v => typeof v === 'number' ? v.toLocaleString('it-IT', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 }) + ' €' : v;
+const ORE = h => h === '' ? '' : String(h).replace('.', ',') + ' h';
+const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\(.*?\)/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+// Dal programma (un giorno per riga) alle tappe: giorni consecutivi nello stesso posto.
+const TIPI = { 'Natura': 'nat', 'Città / cultura': 'city', 'Costa': 'coast', 'Transito': 'transit' };
+function tappe(d) {
+  const out = [];
+  for (const [data, nome, tipo, guida, cosa, dorm, stato, link, prezzo] of d.giorni) {
+    let t = out.at(-1);
+    if (!t || t.nome !== nome) out.push(t = { n: out.length + 1, nome, slug: slug(nome), tipo: TIPI[tipo] || 'city', guida, ll: (d.coordinate[nome] || '').split(',').map(Number), giorni: [], notti: 0 });
+    const notte = data < d.viaggio.ritorno; // l'ultimo giorno non ha notte
+    t.giorni.push({ data, cosa, dorm, stato, link, prezzo, notte });
+    if (notte) t.notti++;
+  }
+  return out;
+}
+// Soggiorni: notti consecutive nella stessa tappa e nella stessa struttura.
+function soggiorni(d) {
+  const out = [];
+  for (const t of tappe(d)) for (const g of t.giorni) {
+    if (!g.notte) continue;
+    const s = out.at(-1);
+    if (s && s.tappa === t.nome && s.struttura === g.dorm) { s.notti++; s.a = g.data; s.prezzo ||= g.prezzo; }
+    else out.push({ tappa: t.nome, slug: t.slug, struttura: g.dorm, stato: g.stato, link: g.link, prezzo: g.prezzo, notti: 1, da: g.data, a: g.data });
+  }
+  return out;
+}
+
+// Descrizioni e foto delle tappe: dati/tappe.md (le cura chi gestisce il sito). Chiave: nome della tappa, senza accenti né parentesi.
+const contenuti = () => contenuti.p ||= fetch('dati/tappe.md').then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }).then(t => {
+  const out = {};
+  for (const b of t.split(/^## /m).slice(1)) {
+    const [head, ...rest] = b.split('\n'), body = rest.join('\n');
+    const [sl, nome] = head.split(' — ');
+    const sec = n => (body.split(new RegExp(`^### ${n}\\s*$`, 'm'))[1] || '').split(/^### /m)[0];
+    const items = x => x.split('\n').filter(l => l.startsWith('- ')).map(l => l.slice(2).trim());
+    const foto = l => { const [src, cap, cred, url] = l.split(' | '); return { src, cap, cred, url }; };
+    out[sl.trim()] = { nome: nome.trim(), desc: body.split(/^### /m)[0].trim(), foto: items(sec('Foto')).map(foto), alloggio: items(sec('Alloggio')).map(foto)[0] };
+  }
+  return out;
+});
 
 // Icone Material Symbols: vuote per le sezioni, piene per quella attuale. Salvate qui per funzionare anche offline.
 const ICONE = {
@@ -43,8 +98,8 @@ const bottoni = (act, lista) => { for (const [l, u] of lista) {
   if (u) { b.href = u; b.target = '_blank'; b.rel = 'noopener'; } else { b.type = 'button'; b.disabled = true; b.title = 'Non ancora disponibile'; }
   act.append(b);
 } };
-// Carica il file dati della pagina e lo disegna; se manca, lo dice.
-const pagina = (nome, disegna) => load(nome).then(disegna).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
+// Disegna la pagina con i dati del viaggio; se non arrivano e non c'è una copia, lo dice.
+const pagina = disegna => viaggio().then(disegna).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
 
 // Offline: dopo la prima apertura con rete il sito resta sul telefono (sw.js).
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(r => r.active.postMessage('foto')).catch(() => {});

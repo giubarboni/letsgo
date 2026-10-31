@@ -47,8 +47,9 @@
   .locate { position: fixed; z-index: 6; top: 16px; right: 16px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--ink); box-shadow: 0 4px 16px rgba(60, 45, 20, .18); cursor: pointer; }
   .locate[hidden] { display: none; }
   @media (max-width: 700px) { .locate { top: calc(env(safe-area-inset-top) + 12px); right: 12px; } }
-  .stop, [data-slug] { cursor: pointer; }
-  ol li[data-slug]:hover .t { text-decoration: underline; }
+  .mday { margin: 12px 0 2px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .stop, [data-n] { cursor: pointer; }
+  ol li[data-n]:hover .t { text-decoration: underline; }
   .modal { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; background: rgba(30, 22, 10, .45); }
   .modal[hidden] { display: none; }
   .sheet { width: 100%; max-width: 560px; max-height: 88vh; max-height: 88dvh; overflow-y: auto; padding: 16px 16px 28px; background: var(--bg); color: var(--ink); border-radius: 16px 16px 0 0; }
@@ -126,32 +127,6 @@ const africa = [
 ];
 const madagascar = [[-12.0,49.3],[-16.0,50.4],[-22.0,47.9],[-25.5,45.2],[-24.0,43.7],[-17.0,44.0],[-15.5,46.3]];
 
-// n = numero tappa, tipo: nat | city | coast | transit
-const stops = [
-  {n:1, slug:'marrakech',  name:'Marrakech',           ll:[31.63,-8.0],   type:'city',    nights:2, drive:'',      note:'Medina, Jemaa el-Fnaa, souk. Ritiro delle auto.', lab:[0,32,'middle']},
-  {n:2, slug:'ouzoud',  name:'Cascate di Ouzoud',   ll:[32.02,-6.72],  type:'nat',     nights:1, drive:'~3 h',  note:'Cascate di 110 m, sentieri e barchette.',        lab:[-18,-2,'end']},
-  {n:3, slug:'fes',  name:'Fès',                 ll:[34.03,-5.0],   type:'city',    nights:2, drive:'~5,5 h',note:'Medina medievale. Sosta ai cedri di Azrou.', lab:[-18,-2,'end']},
-  {n:4, slug:'midelt',  name:'Midelt',              ll:[32.68,-4.74],  type:'transit', nights:1, drive:'~3 h',  note:'Solo tappa. Notte fredda, serve riscaldamento.', lab:[18,-2,'start']},
-  {n:5, slug:'merzouga',  name:'Merzouga',            ll:[31.10,-4.01],  type:'nat',     nights:2, drive:'~4,5 h',note:'Dune dell’Erg Chebbi, notte in campo tendato.',  lab:[18,-2,'start']},
-  {n:6, slug:'todra-dades',  name:'Gole del Todra / Dadès',ll:[31.45,-5.75],type:'nat',     nights:2, drive:'~3 h',  note:'Pareti di 300 m, oasi, strada a tornanti.',      lab:[0,-32,'middle']},
-  {n:7, slug:'ait-benhaddou',  name:'Aït Benhaddou',       ll:[31.05,-7.13],  type:'city',    nights:1, drive:'~3,5 h',note:'Ksar UNESCO di fango, set di molti film.',       lab:[0,30,'middle']},
-  {n:8, slug:'essaouira',  name:'Essaouira',           ll:[31.51,-9.77],  type:'coast',   nights:2, drive:'~7 h',  note:'Via Tizi n’Tichka e Marrakech. Costa e pesce.', lab:[-18,-2,'end']},
-  {n:9, slug:'marrakech',  name:'Marrakech (rientro)', ll:[31.63,-8.0],   type:'city',    nights:1, drive:'~3 h',  note:'Cuscinetto prima del volo.',                      lab:null}
-];
-
-// Punto di passaggio non numerato.
-const tizi = [31.3, -7.36];
-const at = n => stops.find(s => s.n === n).ll;
-const nightsLabel = s => s.n === 1 ? `${s.nights} + ${stops.find(t => t.n === 9).nights} notti` : `${s.nights} ${s.nights === 1 ? 'notte' : 'notti'}`;
-
-// [da, a, curvatura, ore, dx, dy, ancora] — ore = etichetta sul tratto (dx/dy spostano il testo).
-const segs = [
-  [at(1), at(2), 0, '3 h'], [at(2), at(3), 0, '5,5 h'], [at(3), at(4), 0, '3 h'],
-  [at(4), at(5), 0, '4,5 h'], [at(5), at(6), 0, '3 h'], [at(6), at(7), 0, '3,5 h'],
-  [at(7), tizi, 0, '', 0, 0, 'middle', true], [tizi, at(1), 0, '4 h', 14, 16, 'start'],
-  [at(1), at(8), 0, '3 h', 0, -8], [at(8), at(1), 22, '3 h', 0, 14]
-];
-
 const svg = document.getElementById('map');
 // Forme delle tappe (centrate, 30 × 30): natura = fiore a 9 petali, città = quadrato, transito = cerchio, costa = goccia.
 let out = `<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -179,34 +154,10 @@ const refCities = [
 out += `<g fill="var(--muted)" opacity=".7" font-size="12">${refCities.map(c =>
   `<circle cx="${X(c.ll[1])}" cy="${Y(c.ll[0])}" r="3.5"/><text x="${X(c.ll[1]) + c.dx}" y="${Y(c.ll[0]) + 4}" text-anchor="${c.anchor}">${c.name}</text>`).join('')}</g>`;
 
-const labels = [];
-for (const [a, b, bend, h, ox = 0, oy = 4, anchor = 'middle', noArrow] of segs) {
-  const [x1, y1] = [X(a[1]), Y(a[0])], [x2, y2] = [X(b[1]), Y(b[0])];
-  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
-  const cx = mx - dy / len * bend, cy = my + dx / len * bend;
-  out += `<path d="M${x1},${y1} Q${cx},${cy} ${x2},${y2}" fill="none" stroke="var(--route-line)" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 9" ${noArrow ? '' : 'marker-end="url(#a)"'}/>`;
-  // punto a metà della curva (t = 0,5)
-  if (h) labels.push(`<text x="${(x1 + 2 * cx + x2) / 4 + ox}" y="${(y1 + 2 * cy + y2) / 4 + oy}" text-anchor="${anchor}" class="hl" font-size="10" font-weight="600" fill="var(--tag-ink)">${h}</text>`);
-}
-out += labels.join('');
-
-for (const s of stops) {
-  if (s.n === 9) continue; // stesso punto della tappa 1
-  const x = X(s.ll[1]), y = Y(s.ll[0]);
-  const num = s.n === 1 ? '1·9' : s.n;
-  const nts = nightsLabel(s);
-  const halo = s.slug === 'essaouira' ? '' : 'stroke="var(--land)" stroke-width="3" paint-order="stroke"'; // alone sabbia dietro il testo; Essaouira sta sul mare, senza
-  out += `<g class="stop" data-slug="${s.slug}"><use href="#s-${s.type}" x="${x}" y="${y}" fill="var(--tappa)" stroke="var(--land)" stroke-width="2"/>
-    <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${s.n === 1 ? 10 : 12}" font-weight="700" fill="var(--tappa-num)">${num}</text>
-    <text x="${x + s.lab[0]}" y="${y + s.lab[1]}" text-anchor="${s.lab[2]}" font-size="13" font-weight="600" fill="var(--tappa-nome)"
-      ${halo}>${s.name}</text>
-    <text x="${x + s.lab[0]}" y="${y + s.lab[1] + 13}" text-anchor="${s.lab[2]}" font-size="10" fill="var(--muted)"
-      ${halo}>${nts}</text></g>`;
-}
-svg.innerHTML = out;
+svg.innerHTML = out + '<g id="rotte"></g><g id="pin"></g>';
 
 // Dove sono: puntino sulla mappa col GPS del telefono; si vede solo se si è in Marocco.
+let LIMITI = null; // lat min/max, lon min/max del viaggio (con margine): fuori da qui il puntino non si mostra
 const io = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
 io.setAttribute('r', 9); io.setAttribute('fill', 'var(--posizione)'); io.setAttribute('stroke', 'var(--bg)'); io.setAttribute('stroke-width', 3);
 io.setAttribute('visibility', 'hidden');
@@ -214,7 +165,7 @@ svg.append(io);
 // Il consenso lo gestisce il telefono e in app dalla Home lo richiede a ogni apertura: si parte da soli solo se è già concesso,
 // altrimenti serve il tocco sul bottone (così la richiesta non compare a ogni cambio pagina).
 const dove = () => navigator.geolocation.watchPosition(({ coords: { latitude: la, longitude: lo } }) => {
-  io.setAttribute('visibility', la > 27.5 && la < 36 && lo > -13.5 && lo < -0.8 ? 'visible' : 'hidden');
+  io.setAttribute('visibility', LIMITI && la > LIMITI[0] && la < LIMITI[1] && lo > LIMITI[2] && lo < LIMITI[3] ? 'visible' : 'hidden');
   io.setAttribute('cx', X(lo)); io.setAttribute('cy', Y(la));
   locate.hidden = true;
 }, () => {});
@@ -224,24 +175,6 @@ else {
   locate.onclick = dove;
   navigator.permissions?.query({ name: 'geolocation' }).then(p => { if (p.state === 'granted') dove(); else if (p.state === 'denied') locate.hidden = true; }).catch(() => {});
 }
-// sfondo a pillola dietro ogni valore delle ore, misurato sul testo
-// (dopo il caricamento del font, altrimenti le pillole sono misurate col carattere di ripiego)
-document.fonts.load('600 10px "General Sans"').then(() => svg.querySelectorAll('text.hl').forEach(t => {
-  const b = t.getBBox();
-  const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  r.setAttribute('x', b.x - 4); r.setAttribute('y', b.y - 1);
-  r.setAttribute('width', b.width + 8); r.setAttribute('height', b.height + 2);
-  r.setAttribute('rx', 6); r.setAttribute('fill', 'var(--tag-bg)');
-  t.before(r);
-}));
-
-// Lista tappe
-document.getElementById('list').innerHTML = stops.map(s => `
-  <li data-slug="${s.slug}"><span class="n"><svg viewBox="-16 -16 32 32"><use href="#s-${s.type}" fill="var(--tappa)"/><text y="5.5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--tappa-num)">${s.n}</text></svg></span>
-  <div><div class="head"><span class="t">${s.name}</span>
-  <span class="meta">${s.nights} ${s.nights === 1 ? 'notte' : 'notti'}${s.drive ? ' · guida ' + s.drive : ''}</span></div>
-  <div class="note">${s.note}</div></div></li>`).join('');
-
 // Mappa sempre a tutto schermo: un dito sposta, due dita zoomano (rotellina su desktop).
 // Si disegna tutta l'Africa: pizzicando indietro si vede il contesto; all'avvio si inquadra il tragitto.
 const VB = [-860, -440, 7860, 9600];
@@ -291,24 +224,20 @@ phead.addEventListener('pointerup', e => {
 });
 phead.addEventListener('pointercancel', () => { drag = null; goSnap(snapI); });
 
-// Inquadratura iniziale: il tragitto (misurato: 800×450 nel disegno, centro 450,295) centrato nella parte di schermo non coperta dal pannello.
+// Inquadratura iniziale: il tragitto (ROUTE, misurato sul disegno) centrato nella parte di schermo non coperta dal pannello.
+let ROUTE = { cx: 450, cy: 295, w: 800, h: 450 };
 const fit = () => {
   minSc = calcMin();
   const m = mobile.matches;
   // spazio libero: su desktop tra la colonna a sinistra e la navbar a destra; su mobile sopra il bottom sheet (la navbar sta in basso)
   const left = m ? 0 : panel.offsetWidth + 32, w = innerWidth - left - (m ? 0 : navbar.offsetWidth);
   const h = m ? innerHeight - (panel.offsetHeight - snaps()[1]) : innerHeight;
-  sc = Math.min(1.3, Math.max(minSc, .75, Math.min(w / 800, h / 450)));
-  tx = left + w / 2 - (450 - VB[0]) * sc; ty = h / 2 - (295 - VB[1]) * sc; apply();
+  sc = Math.min(1.3, Math.max(minSc, .75, Math.min(w / ROUTE.w, h / ROUTE.h)));
+  tx = left + w / 2 - (ROUTE.cx - VB[0]) * sc; ty = h / 2 - (ROUTE.cy - VB[1]) * sc; apply();
 };
-// Cambiando pagina e tornando, mappa e bottom sheet restano come li hai lasciati (finché l'app/il browser è aperto).
-let saved = null; try { saved = JSON.parse(sessionStorage.getItem('mappa')); } catch {}
-goSnap(saved ? saved.i : 1, true); fit(); // subito: senza animazione al primo disegno
-if (saved) { ({ tx, ty } = saved); sc = Math.max(minSc, saved.sc); apply(); }
 addEventListener('pagehide', () => { try { sessionStorage.setItem('mappa', JSON.stringify({ tx, ty, sc, i: snapI })); } catch {} });
-setTimeout(() => panel.classList.remove('drag'), 50);
 
-document.getElementById('list').addEventListener('click', e => { const li = e.target.closest('[data-slug]'); if (li) openTappa(li.dataset.slug); });
+document.getElementById('list').addEventListener('click', e => { const li = e.target.closest('[data-n]'); if (li) openTappa(+li.dataset.n); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeTappa(); });
 addEventListener('resize', () => { minSc = calcMin(); sc = Math.max(sc, minSc); apply(); goSnap(snapI); });
 
@@ -335,15 +264,15 @@ zoom.addEventListener('pointermove', e => {
 });
 zoom.addEventListener('pointerup', e => {
   if (tap && !tap.moved && ptrs.size === 1) {
-    const g = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-slug]');
-    if (g) openTappa(g.dataset.slug);
+    const g = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-n]');
+    if (g) openTappa(+g.dataset.n);
   }
   tap = null; ptrs.delete(e.pointerId);
 });
 zoom.addEventListener('pointercancel', e => { tap = null; ptrs.delete(e.pointerId); });
 zoom.addEventListener('wheel', e => { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * 0.002), e.clientX, e.clientY); }, { passive: false });
 
-// Scheda della tappa: legge tappe.md (fonte dei contenuti) alla prima apertura.
+// Scheda della tappa: foto e descrizione da dati/tappe.md, programma giorno per giorno dal foglio.
 const modal = document.createElement('div');
 modal.className = 'modal'; modal.hidden = true;
 modal.innerHTML = '<div class="sheet" role="dialog" aria-modal="true"></div>';
@@ -352,38 +281,19 @@ const sheet = modal.firstChild;
 const closeTappa = () => { modal.hidden = true; };
 modal.addEventListener('click', e => { if (e.target === modal) closeTappa(); });
 
-let tappe;
-const loadTappe = () => tappe ||= fetch('dati/tappe.md').then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }).then(t => {
-  const out = {};
-  for (const b of t.split(/^## /m).slice(1)) {
-    const [head, ...rest] = b.split('\n'), body = rest.join('\n');
-    const [slug, nome] = head.split(' — ');
-    const sec = n => (body.split(new RegExp(`^### ${n}\\s*$`, 'm'))[1] || '').split(/^### /m)[0];
-    const items = x => x.split('\n').filter(l => l.startsWith('- ')).map(l => l.slice(2).trim());
-    out[slug.trim()] = {
-      nome: nome.trim(), desc: body.split(/^### /m)[0].trim(), todo: items(sec('Da fare')),
-      foto: items(sec('Foto')).map(l => { const [src, cap, cred, url] = l.split(' | '); return { src, cap, cred, url }; })
-    };
-  }
-  return out;
-});
-
-
-async function openTappa(slug) {
-  const st = stops.find(s => s.slug === slug);
+let T = [], C = {}; // tappe dal foglio, contenuti da tappe.md
+const NOTTI = n => n ? `${n} ${n === 1 ? 'notte' : 'notti'}` : '';
+function openTappa(n) {
+  const t = T[n - 1], c = C[t.slug];
   sheet.replaceChildren();
   const head = el('div', 'mhead'), titles = el('div');
-  titles.append(el('h2', '', st.name), el('div', 'mmeta', nightsLabel(st)));
+  titles.append(el('h2', '', t.nome), el('div', 'mmeta', NOTTI(t.notti)));
   const x = el('button', 'mclose', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Chiudi'); x.onclick = closeTappa;
   head.append(titles, x); sheet.append(head);
   modal.hidden = false; sheet.scrollTop = 0;
-  let d;
-  try { d = (await loadTappe())[slug]; if (!d) throw new Error('assente'); }
-  catch { sheet.append(el('p', 'mdesc', 'Contenuti non disponibili: aprire la pagina online (in locale il file tappe.md non si può leggere).')); return; }
-
-  if (d.foto.length) {
+  if (c?.foto.length) {
     const strip = el('div', 'mphotos');
-    for (const f of d.foto) {
+    for (const f of c.foto) {
       const fig = el('figure'), img = new Image();
       img.src = f.src; img.alt = f.cap; img.loading = 'lazy';
       const cap = el('figcaption'); cap.append(el('span', 'mcap', f.cap), document.createElement('br'));
@@ -393,12 +303,86 @@ async function openTappa(slug) {
     }
     sheet.append(strip);
   }
-  sheet.append(el('p', 'mdesc', d.desc));
-  if (d.todo.length) {
-    sheet.append(el('div', 'mlabel', 'Da fare'));
-    const ul = el('ul', 'mtodo'); d.todo.forEach(t => ul.append(el('li', '', t))); sheet.append(ul);
+  if (c?.desc) sheet.append(el('p', 'mdesc', c.desc));
+  const giorni = t.giorni.filter(g => g.cosa);
+  if (giorni.length) {
+    sheet.append(el('div', 'mlabel', t.giorni.length > 1 ? 'Giorno per giorno' : 'Cosa facciamo'));
+    for (const g of giorni) {
+      if (t.giorni.length > 1) sheet.append(el('div', 'mday', GIORNO(g.data)));
+      const ul = el('ul', 'mtodo'); g.cosa.split('\n').forEach(r => ul.append(el('li', '', r))); sheet.append(ul);
+    }
   }
 }
+
+// Tratte, segnaposto ed etichette dalle tappe del foglio (coordinate già calcolate dallo script).
+function disegna() {
+  const pt = t => [X(t.ll[1]), Y(t.ll[0])], uguali = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) < 6;
+  const punti = []; // tappe nello stesso posto (Marrakech all'arrivo, alla visita e al rientro) condividono un segnaposto
+  for (const t of T) { const q = pt(t); let p = punti.find(r => uguali(r.q, q)); if (!p) punti.push(p = { q, tappe: [] }); p.tappe.push(t); }
+  const occupati = []; // rettangoli già usati da segnaposto, ore e nomi: [x0, y0, x1, y1]
+  const urta = r => occupati.some(o => r[0] < o[2] && r[2] > o[0] && r[1] < o[3] && r[3] > o[1]);
+  for (const p of punti) occupati.push([p.q[0] - 17, p.q[1] - 17, p.q[0] + 17, p.q[1] + 17]);
+  let rotte = '', ore = '', fatte = new Set();
+  T.slice(1).forEach((b, i) => {
+    const [x1, y1] = pt(T[i]), [x2, y2] = pt(b);
+    if (uguali([x1, y1], [x2, y2])) return;
+    const chiave = `${Math.round(x1)},${Math.round(y1)}>${Math.round(x2)},${Math.round(y2)}`, ritorno = fatte.has(`${Math.round(x2)},${Math.round(y2)}>${Math.round(x1)},${Math.round(y1)}`);
+    fatte.add(chiave);
+    const bend = ritorno ? 44 : 0, dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
+    const cx = (x1 + x2) / 2 - dy / len * bend, cy = (y1 + y2) / 2 + dx / len * bend;
+    rotte += `<path d="M${x1},${y1} Q${cx},${cy} ${x2},${y2}" fill="none" stroke="var(--route-line)" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 9" marker-end="url(#a)"/>`;
+    const h = ORE(b.guida);
+    if (h) { // punto a metà della curva (t = 0,5)
+      const mx = (x1 + 2 * cx + x2) / 4, my = (y1 + 2 * cy + y2) / 4 + 4;
+      ore += `<text x="${mx}" y="${my}" text-anchor="middle" class="hl" font-size="10" font-weight="600" fill="var(--tag-ink)">${h}</text>`;
+      occupati.push([mx - 20, my - 14, mx + 20, my + 6]);
+    }
+  });
+  let pin = '';
+  for (const p of punti) {
+    const [x, y] = p.q, prima = p.tappe.reduce((m, t) => t.notti > m.notti ? t : m), nome = prima.nome.replace(/\s*\(.*\)/, ''), nts = NOTTI(p.tappe.reduce((n, t) => n + t.notti, 0));
+    const larg = Math.max(nome.length * 7.4, nts.length * 5.4);
+    // posizione del nome: a destra, a sinistra, sotto, sopra: la prima che non copre altro
+    const prove = [['start', 18, -2, [x + 18, y - 14, x + 18 + larg, y + 14]], ['end', -18, -2, [x - 18 - larg, y - 14, x - 18, y + 14]],
+      ['middle', 0, 32, [x - larg / 2, y + 19, x + larg / 2, y + 46]], ['middle', 0, -32, [x - larg / 2, y - 44, x + larg / 2, y - 14]]];
+    const [anc, dx, dy, r] = prove.find(q => !urta(q[3])) || prove[0];
+    occupati.push(r);
+    const num = p.tappe.map(t => t.n).join('·');
+    pin += `<g class="stop" data-n="${prima.n}"><use href="#s-${p.tappe[0].tipo}" x="${x}" y="${y}" fill="var(--tappa)" stroke="var(--land)" stroke-width="2"/>
+      <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${p.tappe.length === 1 ? 12 : p.tappe.length === 2 ? 8.5 : 7}" font-weight="700" fill="var(--tappa-num)">${num}</text>
+      <text x="${x + dx}" y="${y + dy}" text-anchor="${anc}" font-size="13" font-weight="600" fill="var(--tappa-nome)" stroke="var(--land)" stroke-width="3" paint-order="stroke">${nome}</text>
+      ${nts ? `<text x="${x + dx}" y="${y + dy + 13}" text-anchor="${anc}" font-size="10" fill="var(--muted)" stroke="var(--land)" stroke-width="3" paint-order="stroke">${nts}</text>` : ''}</g>`;
+  }
+  svg.querySelector('#rotte').innerHTML = rotte + ore; svg.querySelector('#pin').innerHTML = pin;
+  // sfondo a pillola dietro ogni valore delle ore, misurato sul testo (dopo il caricamento del font)
+  document.fonts.load('600 10px "General Sans"').then(() => svg.querySelectorAll('text.hl').forEach(t => {
+    const b = t.getBBox(), r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    r.setAttribute('x', b.x - 4); r.setAttribute('y', b.y - 1); r.setAttribute('width', b.width + 8); r.setAttribute('height', b.height + 2);
+    r.setAttribute('rx', 6); r.setAttribute('fill', 'var(--tag-bg)'); t.before(r);
+  }));
+  // area da inquadrare: tutto quello che è stato disegnato, con un po' d'aria
+  const b1 = svg.querySelector('#rotte').getBBox(), b2 = svg.querySelector('#pin').getBBox();
+  const x0 = Math.min(b1.x, b2.x) - 20, y0 = Math.min(b1.y, b2.y) - 20, x1 = Math.max(b1.x + b1.width, b2.x + b2.width) + 20, y1 = Math.max(b1.y + b1.height, b2.y + b2.height) + 20;
+  ROUTE = { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w: x1 - x0, h: y1 - y0 };
+  const la = T.map(t => t.ll[0]), lo = T.map(t => t.ll[1]);
+  LIMITI = [Math.min(...la) - 1.5, Math.max(...la) + 1.5, Math.min(...lo) - 1.5, Math.max(...lo) + 1.5];
+}
+
+// Avvio: dati del foglio + descrizioni; poi lista, mappa e posizione salvata.
+Promise.all([viaggio(), contenuti().catch(() => ({}))]).then(([d, c]) => {
+  T = tappe(d); C = c;
+  document.getElementById('list').innerHTML = T.map(t => `
+    <li data-n="${t.n}"><span class="n"><svg viewBox="-16 -16 32 32"><use href="#s-${t.tipo}" fill="var(--tappa)"/><text y="5.5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--tappa-num)">${t.n}</text></svg></span>
+    <div><div class="head"><span class="t">${t.nome}</span>
+    <span class="meta">${[NOTTI(t.notti), t.guida === '' ? '' : 'guida ' + ORE(t.guida)].filter(Boolean).join(' · ')}</span></div>
+    <div class="note">${(c[t.slug]?.desc || '').split(/(?<=\.)\s/)[0]}</div></div></li>`).join('');
+  disegna();
+  // Cambiando pagina e tornando, mappa e bottom sheet restano come li hai lasciati (finché l'app/il browser è aperto).
+  let saved = null; try { saved = JSON.parse(sessionStorage.getItem('mappa')); } catch {}
+  goSnap(saved ? saved.i : 1, true); fit(); // subito: senza animazione al primo disegno
+  if (saved) { ({ tx, ty } = saved); sc = Math.max(minSc, saved.sc); apply(); }
+  setTimeout(() => panel.classList.remove('drag'), 50);
+}).catch(() => document.getElementById('list').innerHTML = '<li><div>Dati non disponibili.</div></li>');
 </script>
 </body>
 </html>

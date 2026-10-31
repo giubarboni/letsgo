@@ -22,7 +22,7 @@
   .t-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px 0; }
   .t-air { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
   .t-air img { display: block; height: 28px; }
-  .t-date { font-size: 16px; font-weight: 700; }
+  .t-date { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 16px; font-weight: 700; }
   .t-route { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 18px 18px 20px; }
   .t-end:last-child { text-align: right; }
   .t-time { font-size: 28px; font-weight: 700; line-height: 1.1; }
@@ -43,27 +43,29 @@
 <main class="page" id="root"></main>
 <script src="nav.js"></script>
 <script>
-function biglietto(v, bag) {
-  const t = el('section', 'ticket');
+// Logo per codice della compagnia (le prime due lettere del numero volo); senza logo, il segnaposto.
+const LOGHI = { FR: 'loghi/ryanair.svg' };
+const STATO = { 'Prenotato': 'ok' };
+function biglietto([, data, da, a, numero, oraP, oraA, stato, prezzo, linkCarta, linkInfo, bagagli, infoBagagli]) {
+  const t = el('section', 'ticket'), logo = LOGHI[numero.slice(0, 2)] || 'loghi/placeholder.svg', bag = bagagli !== '' || infoBagagli;
   t.innerHTML = `
-    <div class="t-top"><div class="t-air"><img src="${v.logo}" alt=""><span>${v.numero}</span></div><div class="t-date">${v.data}</div></div>
+    <div class="t-top"><div class="t-air"><img src="${logo}" alt=""><span>${numero || 'Volo'}</span></div><div class="t-date">${GIORNO(data)}<span class="stato ${STATO[stato] || ''}">${stato}</span></div></div>
     <div class="t-route">
-      <div class="t-end"><div class="t-time">${v.da.ora}</div><div class="t-city">${v.da.citta}</div></div>
+      <div class="t-end"><div class="t-time">${oraP || '--:--'}</div><div class="t-city">${da}</div></div>
       <div class="t-mid"><i></i>${iconaSvg(ICONE.voli[0], 22)}<i></i></div>
-      <div class="t-end"><div class="t-time">${v.a.ora}</div><div class="t-city">${v.a.citta}</div></div>
+      <div class="t-end"><div class="t-time">${oraA || '--:--'}</div><div class="t-city">${a}</div></div>
     </div>
     <div class="t-stub"><div class="t-row">
-      <div class="t-bag">${iconaSvg(ICONE.valigia[0])}<span>×${v.bagagli}</span><button type="button" aria-label="Bagagli ammessi">${iconaSvg(INFO)}</button></div>
-      <div class="t-price">${v.prezzo}</div></div><div class="actions"></div></div>`;
-  t.querySelector('.t-bag button').onclick = () => modale(bag.titolo, (() => { const ul = el('ul'); bag.voci.forEach(x => ul.append(el('li', '', x))); return ul; })(), el('p', '', bag.nota));
-  const act = t.querySelector('.actions');
-  bottoni(act, v.bottoni);
+      <div class="t-bag">${bag ? `${iconaSvg(ICONE.valigia[0])}${bagagli !== '' ? `<span>×${bagagli}</span>` : ''}${infoBagagli ? `<button type="button" aria-label="Bagagli ammessi">${iconaSvg(INFO)}</button>` : ''}` : ''}</div>
+      <div class="t-price">${EURO(prezzo)}</div></div><div class="actions"></div></div>`;
+  if (infoBagagli) t.querySelector('.t-bag button').onclick = () => modale('Bagagli ammessi', (() => { const ul = el('ul'); infoBagagli.split('\n').forEach(x => ul.append(el('li', '', x))); return ul; })());
+  bottoni(t.querySelector('.actions'), [["Carta d'imbarco", linkCarta], ['Maggiori informazioni', linkInfo]]);
   return t;
 }
 // la tacca sta sulla linea tratteggiata, all'inizio della parte bassa: si ricalcola se cambia la larghezza
 const tacche = () => document.querySelectorAll('.ticket').forEach(t => t.style.setProperty('--cy', t.querySelector('.t-stub').offsetTop + 'px'));
-pagina('voli', d => {
-  d.voli.forEach(v => root.append(biglietto(v, d.bagagli)));
+pagina(d => {
+  d.voli.forEach(v => root.append(biglietto(v)));
   tacche(); addEventListener('resize', tacche);
 });
 </script>

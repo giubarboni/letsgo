@@ -22,6 +22,8 @@
   .stay-txt b { display: block; font-size: 17px; }
   .stay-txt span { display: block; color: var(--muted); font-size: 14px; }
   .stay-txt .stay-price { margin-top: 2px; color: var(--ink); font-size: 16px; font-weight: 700; }
+  .stay-txt .stato { display: inline-block; width: fit-content; margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .stay-txt .stato.ok { color: var(--ink); }
   .stay-act { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: auto; }
   .stay-act .btn { display: inline-flex; align-items: center; gap: 6px; } /* aspetto del bottone: quello di stile.css, come nella card auto */
   .stay-photo { position: relative; flex: 0 0 min(42%, 190px); min-height: 190px; overflow: hidden; border-radius: 12px; background: var(--line); }
@@ -40,21 +42,24 @@
 <script>
 const PIN = 'M529.5-510.5Q550-531 550-560t-20.5-49.5Q509-630 480-630t-49.5 20.5Q410-589 410-560t20.5 49.5Q451-490 480-490t49.5-20.5ZM480-159q133-121 196.5-219.5T740-552q0-118-75.5-193T480-820q-109 0-184.5 75T220-552q0 75 65 173.5T480-159Zm0 79Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Zm0-480Z', TEL = 'M795-120q-116 0-236.5-56T335-335Q232-438 176-558.5T120-795q0-19.29 12.86-32.14Q145.71-840 165-840h140q14 0 24 10t14 25l26.93 125.64Q372-665 369.5-653.5t-10.73 19.73L259-533q26 44 55 82t64 72q37 38 78 69.5t86 55.5l95-98q10-11 23.15-15 13.15-4 25.85-2l119 26q15 4 25 16.04 10 12.05 10 26.96v135q0 19.29-12.86 32.14Q814.29-120 795-120ZM229-588l81-82-23-110H180q2 42 13.5 88.5T229-588Zm369 363q41 19 89 31t93 14v-107l-103-21-79 83ZM229-588Zm369 363Z';
 const GO = 'm242-246-42-42 412-412H234v-60h480v480h-60v-378L242-246Z';
-// Indicazioni: Google Maps verso l'indirizzo (finché manca, verso la località)
-const mappa = v => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(v.indirizzo || v.luogo + ', Marocco')}`;
-function stay(v) {
-  const c = el('article', 'stay');
-  c.innerHTML = `
-    <div class="stay-txt"><div><b>${v.luogo}</b><span>${v.struttura}</span></div><div><span>${v.notti} · ${v.date}</span><span class="stay-price">${v.prezzo}</span></div>
-      <div class="stay-act"><a class="btn" href="${mappa(v)}" target="_blank" rel="noopener">${iconaSvg(PIN, 18)}Ottieni indicazioni</a><button class="btn stay-tel" type="button" disabled title="Non ancora disponibile">${iconaSvg(TEL, 18)}Contatti</button></div></div>
-    <div class="stay-photo"><img src="${v.foto}" alt="" loading="lazy"><button class="stay-go" type="button" aria-label="Maggiori dettagli" title="Non ancora disponibile" disabled>${iconaSvg(GO, 18)}</button></div>`;
-  if (v.link) { const b = c.querySelector('.stay-go'); b.disabled = false; b.title = 'Maggiori dettagli'; b.onclick = () => open(v.link, '_blank', 'noopener'); }
-  return c;
+const STATO = { 'Prenotato': 'ok' };
+function stay(v, paese, c) {
+  // Indicazioni: Google Maps verso la struttura (finché manca, verso la tappa)
+  const dest = encodeURIComponent(v.struttura ? `${v.struttura}, ${v.tappa}, ${paese}` : `${v.tappa}, ${paese}`), foto = c?.alloggio?.src;
+  const a = el('article', 'stay');
+  a.innerHTML = `
+    <div class="stay-txt"><div><b>${v.tappa}</b><span>${v.struttura || 'Da scegliere'}</span></div>
+      <div><span>${v.notti} ${v.notti === 1 ? 'notte' : 'notti'} · ${INTERVALLO(v.da, v.a)}</span>${v.prezzo === '' ? '' : `<span class="stay-price">${EURO(v.prezzo)}</span>`}<span class="stato ${STATO[v.stato] || ''}">${v.stato}</span></div>
+      <div class="stay-act"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=${dest}" target="_blank" rel="noopener">${iconaSvg(PIN, 18)}Ottieni indicazioni</a><button class="btn stay-tel" type="button" disabled title="Non ancora disponibile">${iconaSvg(TEL, 18)}Contatti</button></div></div>
+    <div class="stay-photo">${foto ? `<img src="${foto}" alt="" loading="lazy">` : ''}<button class="stay-go" type="button" aria-label="Maggiori dettagli" title="Non ancora disponibile" disabled>${iconaSvg(GO, 18)}</button></div>`;
+  if (v.link) { const b = a.querySelector('.stay-go'); b.disabled = false; b.title = 'Maggiori dettagli'; b.onclick = () => open(v.link, '_blank', 'noopener'); }
+  return a;
 }
-pagina('dormire', d => {
-  const g = el('div', 'stays'); d.voci.forEach(v => g.append(stay(v))); root.append(g);
+pagina(async d => {
+  const c = await contenuti().catch(() => ({})), sg = soggiorni(d), g = el('div', 'stays');
+  sg.forEach(v => g.append(stay(v, d.viaggio.paese, c[v.slug]))); root.append(g);
   const cr = el('details', 'credits'); cr.append(el('summary', '', 'Crediti foto'));
-  d.voci.forEach(v => { const p = el('p'), a = el('a', '', `${v.autore} · ${v.licenza}`); a.href = v.fonte; a.target = '_blank'; a.rel = 'noopener'; p.append(`${v.luogo}: `, a); cr.append(p); });
+  [...new Set(sg.map(v => v.slug))].forEach(sl => { const f = c[sl]?.alloggio; if (!f) return; const p = el('p'), l = el('a', '', f.cred); l.href = f.url; l.target = '_blank'; l.rel = 'noopener'; p.append(`${c[sl].nome}: `, l); cr.append(p); });
   root.append(cr);
 });
 </script>

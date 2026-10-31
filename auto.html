@@ -33,8 +33,7 @@
   .price b { font-size: 26px; }
   .price span { color: var(--muted); font-size: 14px; }
   .price small { display: block; color: var(--muted); font-size: 13px; }
-  .credit { padding: 0 16px 12px; color: var(--muted); font-size: 11px; }
-  .credit a { color: inherit; }
+  .car-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 </style>
 </head>
 <body data-page="auto">
@@ -50,29 +49,26 @@ const ICO = {
   cauzione: 'M540-420q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM220-280q-24.75 0-42.37-17.63Q160-315.25 160-340v-400q0-24.75 17.63-42.38Q195.25-800 220-800h640q24.75 0 42.38 17.62Q920-764.75 920-740v400q0 24.75-17.62 42.37Q884.75-280 860-280H220Zm100-60h440q0-42 29-71t71-29v-200q-42 0-71-29t-29-71H320q0 42-29 71t-71 29v200q42 0 71 29t29 71Zm480 180H100q-24.75 0-42.37-17.63Q40-195.25 40-220v-460h60v460h700v60ZM220-340v-400 400Z'
 };
 const sv = (d, s = 16) => iconaSvg(d, s);
-function auto(a) {
-  const c = el('article', 'car');
+// Foto delle auto (le cura chi gestisce il sito): per posizione nel foglio; "scala" e "giu" correggono l'inquadratura.
+const FOTO = [{ src: 'foto/auto/1.png' }, { src: 'foto/auto/2.png', scala: 1.2, giu: 10 }];
+const STATO = { 'Prenotato': 'ok' };
+function auto([nome, modello, totale, stato, link, ritiro, riconsegna, giorni, prezzoGiorno, aPersona, posti, bagagli, cambio, clima, franchigia, cauzione], i) {
+  const c = el('article', 'car'), f = FOTO[i] || {}, chip = (ico, v) => v === '' ? '' : `<span class="chip">${ico}${v}</span>`;
+  const dettagli = [['ritiro', ritiro, 'Ritiro · '], ['riconsegna', riconsegna, 'Riconsegna · '], ['franchigia', franchigia, 'Franchigia '], ['cauzione', cauzione, 'Cauzione ']].filter(x => x[1] !== '');
   c.innerHTML = `
-    <div class="car-img"><img class="car-photo" src="${a.foto}" alt=""${a.scala ? ` style="transform: translateY(${a.giu || 0}%) scale(${a.scala}); transform-origin: 50% 100%"` : ''}></div>
+    <div class="car-img">${f.src ? `<img class="car-photo" src="${f.src}" alt=""${f.scala ? ` style="transform: translateY(${f.giu || 0}%) scale(${f.scala}); transform-origin: 50% 100%"` : ''}>` : ''}</div>
     <div class="car-body">
-      <div><h2>${a.modello}</h2></div>
-      <div class="chips">
-        <span class="chip">${sv(ICO.persone)}${a.persone}</span>
-        <span class="chip">${sv(ICONE.valigia[0])}${a.bagagli}</span>
-        <span class="chip">${a.cambio}</span>
-        <span class="chip">${sv(ICO.clima)}${a.clima}</span>
-      </div>
-      <ul>${a.dettagli.map(([k, t]) => `<li>${sv(ICO[k])}<span>${t}</span></li>`).join('')}</ul>
-      <div class="price"><b>${a.prezzoGiorno}</b> <span>/ giorno</span><small>Totale ${a.totale}</small></div>
+      <div class="car-top"><h2>${modello || nome}</h2><span class="stato ${STATO[stato] || ''}">${stato}</span></div>
+      <div class="chips">${chip(sv(ICO.persone), posti)}${chip(sv(ICONE.valigia[0]), bagagli)}${chip('', cambio)}${chip(sv(ICO.clima), clima)}</div>
+      <ul>${dettagli.map(([k, v, e]) => `<li>${sv(ICO[k])}<span>${e}${typeof v === 'number' ? EURO(v) : v}</span></li>`).join('')}</ul>
+      <div class="price"><b>${prezzoGiorno === '' ? '' : EURO(Math.round(prezzoGiorno * 100) / 100)}</b> <span>${prezzoGiorno === '' ? '' : '/ giorno'}</span><small>${totale === '' ? '' : `Totale ${EURO(totale)}`}${aPersona === '' ? '' : ` · ${EURO(Math.round(aPersona * 100) / 100)} a persona`}</small></div>
       <div class="actions"></div>
-    </div>
-    ${a.credito ? `<div class="credit">Foto: <a href="${a.fonte}" target="_blank" rel="noopener">${a.credito}</a></div>` : ''}`;
-  const act = c.querySelector('.actions');
-  bottoni(act, a.bottoni);
+    </div>`;
+  bottoni(c.querySelector('.actions'), [['Maggiori informazioni', link]]);
   return c;
 }
-pagina('auto', d => {
-  const cars = el('div', 'cars'); d.auto.forEach(a => cars.append(auto(a))); root.append(cars);
+pagina(d => {
+  const cars = el('div', 'cars'); d.auto.forEach((a, i) => cars.append(auto(a, i))); root.append(cars);
 });
 </script>
 </body>
