@@ -281,7 +281,7 @@ const sheet = modal.firstChild;
 const closeTappa = () => { modal.hidden = true; };
 modal.addEventListener('click', e => { if (e.target === modal) closeTappa(); });
 
-let T = [], C = {}; // tappe dal foglio, contenuti da tappe.md
+let T = [], C = {}; // tappe dal foglio, contenuti da tappe.md (o, per le tappe nuove, da Wikipedia)
 const NOTTI = n => n ? `${n} ${n === 1 ? 'notte' : 'notti'}` : '';
 function openTappa(n) {
   const t = T[n - 1], c = C[t.slug];
@@ -291,19 +291,23 @@ function openTappa(n) {
   const x = el('button', 'mclose', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Chiudi'); x.onclick = closeTappa;
   head.append(titles, x); sheet.append(head);
   modal.hidden = false; sheet.scrollTop = 0;
-  if (c?.foto.length) {
-    const strip = el('div', 'mphotos');
-    for (const f of c.foto) {
-      const fig = el('figure'), img = new Image();
-      img.src = f.src; img.alt = f.cap; img.loading = 'lazy';
-      const cap = el('figcaption'); cap.append(el('span', 'mcap', f.cap), document.createElement('br'));
-      if (/^https:/.test(f.url || '')) { const a = el('a', '', f.cred); a.href = f.url; a.target = '_blank'; a.rel = 'noopener'; cap.append(a); }
-      else cap.append(f.cred || '');
-      fig.append(img, cap); strip.append(fig);
+  const extra = el('div'); sheet.append(extra);
+  const riempi = c => {
+    if (c?.foto.length) {
+      const strip = el('div', 'mphotos');
+      for (const f of c.foto) {
+        const fig = el('figure'), img = new Image();
+        img.src = f.src; img.alt = f.cap; img.loading = 'lazy';
+        const cap = el('figcaption'); cap.append(el('span', 'mcap', f.cap), document.createElement('br'));
+        if (/^https:/.test(f.url || '')) { const a = el('a', '', f.cred); a.href = f.url; a.target = '_blank'; a.rel = 'noopener'; cap.append(a); }
+        else cap.append(f.cred || '');
+        fig.append(img, cap); strip.append(fig);
+      }
+      extra.append(strip);
     }
-    sheet.append(strip);
-  }
-  if (c?.desc) sheet.append(el('p', 'mdesc', c.desc));
+    if (c?.desc) extra.append(el('p', 'mdesc', c.desc));
+  };
+  if (c) riempi(c); else automatico(t).then(a => { if (extra.isConnected) riempi(a); });
   const giorni = t.giorni.filter(g => g.cosa);
   if (giorni.length) {
     sheet.append(el('div', 'mlabel', t.giorni.length > 1 ? 'Giorno per giorno' : 'Cosa facciamo'));
@@ -376,6 +380,7 @@ Promise.all([viaggio(), contenuti().catch(() => ({}))]).then(([d, c]) => {
     <div><div class="head"><span class="t">${t.nome}</span>
     <span class="meta">${[NOTTI(t.notti), t.guida === '' ? '' : 'guida ' + ORE(t.guida)].filter(Boolean).join(' · ')}</span></div>
     <div class="note">${(c[t.slug]?.desc || '').split(/(?<=\.)\s/)[0]}</div></div></li>`).join('');
+  for (const t of T) if (!c[t.slug]) automatico(t).then(a => { const n = document.querySelector(`#list li[data-n="${t.n}"] .note`); if (n && a.desc) n.textContent = a.desc.split(/(?<=\.)\s/)[0]; });
   disegna();
   // Cambiando pagina e tornando, mappa e bottom sheet restano come li hai lasciati (finché l'app/il browser è aperto).
   let saved = null; try { saved = JSON.parse(sessionStorage.getItem('mappa')); } catch {}

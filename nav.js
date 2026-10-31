@@ -60,6 +60,39 @@ const contenuti = () => contenuti.p ||= fetch('dati/tappe.md').then(r => { if (!
   return out;
 });
 
+// Tappe senza sezione in dati/tappe.md: testo da Wikipedia e foto da Wikimedia Commons, cercati per coordinate.
+// Il risultato resta sul telefono (se Wikipedia non risponde non si salva nulla e si riprova). Stessa forma di contenuti(): { desc, foto: [{ src, cap, cred, url }] }.
+const memo = {};
+const automatico = t => memo[t.slug] ||= (async () => {
+  const k = 'wiki:' + t.slug;
+  try { const c = JSON.parse(localStorage.getItem(k)); if (c) return c; } catch {}
+  const [la, lo] = t.ll; if (!(la && lo)) return { desc: '', foto: [] };
+  let ko = false; // l'API di Wikipedia a volte risponde "troppo occupata": si riprova, e se non va non si salva niente
+  const pagine = async (host, p) => {
+    for (let i = 0; i < 5; i++) try {
+      const j = await fetch(`https://${host}/w/api.php?action=query&generator=geosearch&ggscoord=${la}|${lo}&format=json&origin=*&${p}`).then(r => r.json());
+      if (!j.error) return Object.values(j.query?.pages || {});
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    } catch {}
+    ko = true; return [];
+  };
+  const [wiki, commons] = await Promise.all([
+    pagine('it.wikipedia.org', 'ggsradius=10000&ggslimit=10&prop=extracts|pageimages&exintro=1&explaintext=1&exsentences=3&piprop=thumbnail&pithumbsize=800'),
+    pagine('commons.wikimedia.org', 'ggsnamespace=6&ggsradius=3000&ggslimit=50&prop=imageinfo&iiprop=url|extmetadata|mime|size&iiurlwidth=800')]);
+  // Il testo si accetta solo se il titolo dell'articolo è la tappa (meglio nessun testo che quello sbagliato).
+  const p = wiki.sort((a, b) => a.index - b.index).find(w => slug(w.title) === t.slug) || wiki.find(w => slug(w.title).length > 3 && t.slug.includes(slug(w.title)));
+  const testo = h => new DOMParser().parseFromString(h || '', 'text/html').body.textContent.trim();
+  // solo foto grandi e orizzontali: le altre sono spesso scansioni d'archivio
+  const foto = commons.filter(c => { const i = c.imageinfo?.[0]; return i?.mime === 'image/jpeg' && i.extmetadata.LicenseShortName && i.width >= 1600 && i.width / i.height >= 1.3; }).slice(0, 3).map(c => {
+    const i = c.imageinfo[0], m = i.extmetadata;
+    return { src: i.thumburl, cap: c.title.replace(/^File:|\.jpe?g$|\s*-?\s*panoramio.*$/gi, '').replace(/_/g, ' '), cred: `${testo(m.Artist?.value) || 'Wikimedia Commons'} · ${m.LicenseShortName.value}`, url: i.descriptionurl };
+  });
+  if (/\.jpe?g/i.test(p?.thumbnail?.source)) foto.unshift({ src: p.thumbnail.source, cap: p.title, cred: 'Wikipedia', url: `https://it.wikipedia.org/?curid=${p.pageid}` });
+  const out = { desc: (p?.extract || '').replace(/\s*\([^)]*\)/g, '').split('\n')[0], foto };
+  if (ko) delete memo[t.slug]; else try { localStorage.setItem(k, JSON.stringify(out)); } catch {}
+  return out;
+})();
+
 // Icone Material Symbols: vuote per le sezioni, piene per quella attuale. Salvate qui per funzionare anche offline.
 const ICONE = {
   mappa: ['m612-120-263-93-179 71q-17 9-33.5-1T120-173v-558q0-13 7.5-23t19.5-15l202-71 263 92 178-71q17-8 33.5 1.5T840-788v565q0 11-7.5 19T814-192l-202 72Zm-34-75v-505l-196-66v505l196 66Zm60 0 142-47v-512l-142 54v505Zm-458-12 142-54v-505l-142 47v512Zm458-493v505-505Zm-316-66v505-505Z', 'm612-120-263-93-179 71q-17 9-33.5-1T120-173v-558q0-13 7.5-23t19.5-15l202-71 263 92 178-71q17-8 33.5 1.5T840-788v565q0 11-7.5 19T814-192l-202 72Zm-34-75v-505l-196-66v505l196 66Z'],

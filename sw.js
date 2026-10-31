@@ -1,6 +1,6 @@
 // Funzionamento offline: pagine, dati, font e foto restano sul telefono.
 // Si risponde subito dalla copia salvata e intanto la si aggiorna: le novità arrivano all'apertura successiva.
-const CACHE = 'marocco-v13';
+const CACHE = 'marocco-v14';
 const BASE = ['./', 'index.html', 'voli.html', 'auto.html', 'dormire.html', 'valigia.html', 'stile.css', 'nav.js', 'manifest.webmanifest',
   'dati/tappe.md',
   'loghi/placeholder.svg', 'loghi/ryanair.svg', 'icone/favicon.svg', 'icone/favicon-32.png', 'foto/auto/1.png', 'foto/auto/2.png', 'font/GeneralSans-Variable.woff2'];
