@@ -15,7 +15,7 @@ Arrivo a tarda sera e notte vicino a Marrakech. La visita della città è al rit
 
 ### Alloggio
 
-- foto/dormire/1.webp | Esempio di alloggio | calflier001 · CC BY-SA 2.0 | https://commons.wikimedia.org/wiki/File:RIAD_LALLA_KHITI_MARRAKECH_MOROCCO_APRIL_2013_(8713893422).jpg
+- foto/dormire/vicino-a-marrakech.webp | L'alloggio con piscina | Foto dell'annuncio su Booking | https://www.booking.com/Share-UVFRLU
 
 ## cascate-di-ouzoud — Cascate di Ouzoud
 
