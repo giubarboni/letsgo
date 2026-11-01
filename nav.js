@@ -5,13 +5,16 @@ const cur = document.body.dataset.page;
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
 
 // Dati del viaggio: arrivano dal foglio Google tramite il suo script, che passa solo le schede e le colonne decise nel foglio.
-// Con la rete lenta (più di 2,5 s) o assente si usa l'ultima copia salvata, e intanto si aggiorna per la volta dopo.
+// Se c'è una copia salvata si parte subito da quella (il foglio impiega qualche secondo a rispondere) e, se nel foglio
+// qualcosa è cambiato, la pagina si ridisegna appena arriva la risposta (evento 'viaggio'). Senza copia (prima volta) si aspetta il foglio.
 const FOGLIO = 'https://script.google.com/macros/s/AKfycbxJ9yiUvAH9bZ2JeltHj5YWQ5Hs-_KNHd5OFIoWYQocJrWVxu62dpSIB_-CF_e5zsC3Gw/exec';
 const viaggio = () => viaggio.p ||= (() => {
   let copia = null; try { copia = JSON.parse(localStorage.getItem('viaggio')); } catch {}
   const rete = fetch(FOGLIO).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(d => { try { localStorage.setItem('viaggio', JSON.stringify(d)); } catch {} return d; });
-  return copia ? Promise.race([rete, new Promise(ok => setTimeout(() => ok(copia), 2500))]).catch(() => copia) : rete;
+  if (!copia) return rete;
+  rete.then(d => { if (JSON.stringify(d) !== JSON.stringify(copia)) dispatchEvent(new CustomEvent('viaggio', { detail: d })); }).catch(() => {});
+  return Promise.resolve(copia);
 })();
 
 // Formati: "28 dic", "28–29 dic", "430,51 €", "6,5 h"
@@ -132,7 +135,10 @@ const bottoni = (act, lista) => { for (const [l, u] of lista) {
   act.append(b);
 } };
 // Disegna la pagina con i dati del viaggio; se non arrivano e non c'è una copia, lo dice.
-const pagina = disegna => viaggio().then(disegna).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
+const pagina = disegna => {
+  viaggio().then(disegna).catch(() => root.append(el('p', 'intro', 'Dati non disponibili.')));
+  addEventListener('viaggio', e => { root.replaceChildren(); disegna(e.detail); });
+};
 
 // Offline: dopo la prima apertura con rete il sito resta sul telefono (sw.js).
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(r => r.active.postMessage('foto')).catch(() => {});

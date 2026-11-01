@@ -373,6 +373,10 @@ function disegna() {
 }
 
 // Avvio: dati del foglio + descrizioni; poi lista, mappa e posizione salvata.
+addEventListener('viaggio', () => { // il foglio è cambiato: la mappa riparte (posizione e pannello restano), al massimo una volta al minuto
+  try { if (Date.now() - sessionStorage.getItem('ricarica') < 60000) return; sessionStorage.setItem('ricarica', Date.now()); } catch { return; }
+  location.reload();
+});
 Promise.all([viaggio(), contenuti().catch(() => ({}))]).then(([d, c]) => {
   T = tappe(d); C = c;
   document.getElementById('list').innerHTML = T.map(t => `
