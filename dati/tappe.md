@@ -50,7 +50,7 @@ Medina medievale tra le più grandi al mondo, con concerie e madrase.
 
 ## midelt — Midelt
 
-Cittadina a 1.500 m sotto il Jbel Ayachi: tappa di passaggio, notti fredde.
+Cittadina a 1.500 m sotto il Jbel Ayachi: tappa di passaggio, notti fredde. Rischio neve: da Fès, tra Azrou e il Col du Zad (oltre 2.000 m), a dicembre e gennaio la strada può chiudere o rallentare per qualche ora. Controllare lo stato prima di partire.
 
 ### Foto
 
@@ -80,7 +80,7 @@ Dune dell'Erg Chebbi alte fino a 150 m, al limite del Sahara.
 
 ## gole-del-todra-dades — Gole del Todra / Dadès
 
-Gole con pareti verticali fino a 300 m, oasi e strade a tornanti.
+Gole con pareti verticali fino a 300 m, oasi e strade a tornanti. Rischio neve: la strada di montagna che collega Todra e Dadès passa in quota ed è in parte sterrata, d'inverno può essere impraticabile. Meglio restare sulla statale da Tinghir a Boumalne.
 
 ### Foto
 
@@ -95,7 +95,7 @@ Gole con pareti verticali fino a 300 m, oasi e strade a tornanti.
 
 ## ait-benhaddou — Aït Benhaddou
 
-Ksar fortificato di fango, patrimonio UNESCO, scenario di molti film.
+Ksar fortificato di fango, patrimonio UNESCO, scenario di molti film. Rischio neve: il giorno dopo si passa il Tizi n'Tichka (2.260 m), che a dicembre e gennaio può chiudere per neve anche un giorno intero. Controllare la sera prima e tenere margine per il rientro.
 
 ### Foto
 
